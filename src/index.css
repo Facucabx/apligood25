@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-sans text-gray-800 bg-white;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    @apply text-gray-100 bg-gray-900;
+  }
+}
+/* stylelint-disable */
