@@ -14,11 +14,13 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
+import { toast } from "react-toastify";
 
 export default function AdminProfesionales() {
   const [profesionales, setProfesionales] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
   const [formData, setFormData] = useState({
     nombre: "",
     especialidad: "",
@@ -85,19 +87,34 @@ export default function AdminProfesionales() {
   };
 
   const guardarProfesional = async () => {
-    if (editId) {
-      const ref = doc(db, "profesionales", editId);
-      await updateDoc(ref, formData);
-    } else {
-      await addDoc(profesionalesRef, formData);
+    const { nombre, especialidad, ciudad, disponible, avatar } = formData;
+
+    if (!nombre || !especialidad || !ciudad || !disponible || !avatar) {
+      toast.error("Todos los campos son obligatorios");
+      return;
     }
-    setModalOpen(false);
-    cargarProfesionales();
+
+    try {
+      if (editId) {
+        const ref = doc(db, "profesionales", editId);
+        await updateDoc(ref, formData);
+        toast.success("Profesional actualizado");
+      } else {
+        await addDoc(profesionalesRef, formData);
+        toast.success("Profesional agregado");
+      }
+      setModalOpen(false);
+      cargarProfesionales();
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al guardar");
+    }
   };
 
   const eliminarProfesional = async (id) => {
     if (confirm("¿Estás seguro que querés eliminar este profesional?")) {
       await deleteDoc(doc(db, "profesionales", id));
+      toast.info("Profesional eliminado");
       cargarProfesionales();
     }
   };
@@ -111,6 +128,7 @@ export default function AdminProfesionales() {
   };
 
   const subirImagen = async (file) => {
+    setSubiendo(true);
     const storage = getStorage();
     const ruta = `avatars/${Date.now()}-${file.name}`;
     const storageRef = ref(storage, ruta);
@@ -119,10 +137,12 @@ export default function AdminProfesionales() {
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       setFormData((prev) => ({ ...prev, avatar: url }));
-      alert("✅ Imagen subida con éxito");
+      toast.success("✅ Imagen subida");
     } catch (error) {
-      console.error("Error al subir imagen:", error);
-      alert("❌ Error al subir imagen");
+      console.error(error);
+      toast.error("❌ Error al subir imagen");
+    } finally {
+      setSubiendo(false);
     }
   };
 
@@ -214,7 +234,7 @@ export default function AdminProfesionales() {
           <div className="bg-white text-black p-6 rounded shadow-lg w-full max-w-md">
             <h3 className="text-xl font-bold mb-4">{editId ? "Editar" : "Nuevo"} Profesional</h3>
             <div className="space-y-2">
-              {["nombre", "especialidad", "ciudad", "disponible"].map((f) => (
+              {["nombre", "especialidad", "ciudad"].map((f) => (
                 <input
                   key={f}
                   name={f}
@@ -224,6 +244,18 @@ export default function AdminProfesionales() {
                   className="w-full p-2 border rounded"
                 />
               ))}
+
+              <select
+                name="disponible"
+                value={formData.disponible}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">⏰ Disponibilidad</option>
+                <option value="24hs">24hs</option>
+                <option value="Horario comercial">Horario comercial</option>
+                <option value="Fines de semana">Fines de semana</option>
+              </select>
 
               <input
                 type="number"
@@ -237,22 +269,44 @@ export default function AdminProfesionales() {
                 placeholder="rating"
               />
 
-              {/* Subida de imagen */}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) subirImagen(file);
-                }}
-                className="w-full p-2 border rounded"
-              />
+              {/* Imagen: ver o cambiar */}
               {formData.avatar && (
-                <img
-                  src={formData.avatar}
-                  alt="preview"
-                  className="w-20 h-20 object-cover rounded-full border"
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-gray-600">Imagen actual</p>
+                  <img
+                    src={formData.avatar}
+                    alt="preview"
+                    className="w-20 h-20 object-cover rounded-full border mx-auto"
+                  />
+                  <label className="block mt-2 text-sm font-medium">
+                    Cambiar imagen:
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) subirImagen(file);
+                      }}
+                      className="w-full mt-1 p-1 border rounded"
+                    />
+                  </label>
+                </div>
+              )}
+
+              {!formData.avatar && (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) subirImagen(file);
+                  }}
+                  className="w-full p-2 border rounded"
                 />
+              )}
+
+              {subiendo && (
+                <p className="text-sm text-gray-500 text-center mt-2">Subiendo imagen...</p>
               )}
             </div>
 
