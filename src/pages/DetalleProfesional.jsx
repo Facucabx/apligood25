@@ -35,7 +35,11 @@ export default function DetalleProfesional() {
       <div className="max-w-md mx-auto p-4">
         {/* Profesional */}
         <div className="flex items-center gap-4 bg-blue-100 rounded-lg p-4 mb-4 shadow">
-          <img src={profesional.avatar} alt={profesional.nombre} className="w-12 h-12 rounded-full" />
+          <img
+            src={profesional.avatar}
+            alt={profesional.nombre}
+            className="w-12 h-12 rounded-full"
+          />
           <div>
             <p className="text-xs text-gray-600">{profesional.profesion}</p>
             <h3 className="text-md font-bold text-blue-700">{profesional.nombre}</h3>

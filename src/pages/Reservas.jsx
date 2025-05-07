@@ -8,9 +8,7 @@ export default function Reservas() {
       </header>
 
       <div className="max-w-md mx-auto p-4">
-        <p className="text-center text-gray-600">
-          Acá vas a ver los mejores reservas.
-        </p>
+        <p className="text-center text-gray-600">Acá vas a ver los mejores reservas.</p>
       </div>
 
       <BottomNav />

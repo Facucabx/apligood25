@@ -1,19 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "react-toastify";
 
 export default function AdminProfesionales() {
@@ -54,9 +42,7 @@ export default function AdminProfesionales() {
     let resultado = profesionales;
 
     if (search.trim() !== "") {
-      resultado = resultado.filter((p) =>
-        p.nombre.toLowerCase().includes(search.toLowerCase())
-      );
+      resultado = resultado.filter((p) => p.nombre.toLowerCase().includes(search.toLowerCase()));
     }
     if (filtroCiudad !== "Todas") {
       resultado = resultado.filter((p) => p.ciudad === filtroCiudad);
@@ -208,7 +194,9 @@ export default function AdminProfesionales() {
             />
             <div className="flex-1">
               <h3 className="text-lg font-bold text-blue-400">{p.nombre}</h3>
-              <p>{p.especialidad} – {p.ciudad}</p>
+              <p>
+                {p.especialidad} – {p.ciudad}
+              </p>
             </div>
             <div className="flex flex-col gap-2">
               <button
@@ -311,10 +299,7 @@ export default function AdminProfesionales() {
             </div>
 
             <div className="mt-4 flex justify-end gap-2">
-              <button
-                onClick={() => setModalOpen(false)}
-                className="px-4 py-2 border rounded"
-              >
+              <button onClick={() => setModalOpen(false)} className="px-4 py-2 border rounded">
                 Cancelar
               </button>
               <button

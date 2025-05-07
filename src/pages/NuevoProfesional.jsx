@@ -54,7 +54,6 @@ export default function NuevoProfesional() {
             value={form[campo]}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded shadow-sm text-black"
-
           />
         ))}
 

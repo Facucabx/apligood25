@@ -7,7 +7,7 @@ const firebaseConfig = {
   projectId: "apligood2025",
   storageBucket: "apligood2025.firebasestorage.app",
   messagingSenderId: "820543904439",
-  appId: "1:820543904439:web:9a3dd5fc603c3ccebc4b32"
+  appId: "1:820543904439:web:9a3dd5fc603c3ccebc4b32",
 };
 
 const app = initializeApp(firebaseConfig);

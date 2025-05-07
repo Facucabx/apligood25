@@ -8,7 +8,6 @@ import PerfilProfesional from "./pages/PerfilProfesional"; // ✅ Import correct
 import NuevoProfesional from "./pages/NuevoProfesional";
 import AdminProfesionales from "./pages/AdminProfesionales";
 
-
 export default function App() {
   return (
     <BrowserRouter>
@@ -21,8 +20,6 @@ export default function App() {
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/nuevo" element={<NuevoProfesional />} />
         <Route path="/admin" element={<AdminProfesionales />} />
-
-
       </Routes>
     </BrowserRouter>
   );

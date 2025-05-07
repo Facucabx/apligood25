@@ -4,7 +4,7 @@ const mensajes = [
   "Encontrá profesionales de confianza cerca tuyo",
   "Reservá turnos de forma rápida y segura",
   "Reportá objetos perdidos y encontrados",
-  "Sugerí mejoras para tu comunidad"
+  "Sugerí mejoras para tu comunidad",
 ];
 
 export default function BannerDinamico() {

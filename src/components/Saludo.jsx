@@ -19,9 +19,7 @@ export default function Saludo({ nombre = "Facu" }) {
       <h2 className="text-xl md:text-2xl font-semibold text-gray-100 dark:text-white drop-shadow">
         {saludo}, {nombre} 👋
       </h2>
-      <p className="text-sm text-gray-300 dark:text-gray-400 mt-1">
-        ¿Qué querés hacer hoy?
-      </p>
+      <p className="text-sm text-gray-300 dark:text-gray-400 mt-1">¿Qué querés hacer hoy?</p>
     </motion.div>
   );
 }

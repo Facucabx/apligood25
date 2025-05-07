@@ -5,13 +5,21 @@ export default function ResenasTab({ profesional, subTab, setSubTab }) {
     <div>
       <div className="flex justify-around mb-2">
         <button
-          className={subTab === "positivas" ? "text-green-600 font-bold border-b-2 border-green-600" : "text-gray-500"}
+          className={
+            subTab === "positivas"
+              ? "text-green-600 font-bold border-b-2 border-green-600"
+              : "text-gray-500"
+          }
           onClick={() => setSubTab("positivas")}
         >
           Positivas
         </button>
         <button
-          className={subTab === "negativas" ? "text-red-600 font-bold border-b-2 border-red-600" : "text-gray-500"}
+          className={
+            subTab === "negativas"
+              ? "text-red-600 font-bold border-b-2 border-red-600"
+              : "text-gray-500"
+          }
           onClick={() => setSubTab("negativas")}
         >
           Negativas

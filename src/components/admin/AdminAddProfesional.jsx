@@ -7,7 +7,7 @@ export default function AdminAddProfesional() {
     nombre: "",
     especialidad: "",
     ciudad: "",
-    imagen: ""
+    imagen: "",
   });
   const [subiendo, setSubiendo] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -42,7 +42,12 @@ export default function AdminAddProfesional() {
   };
 
   const handleGuardar = async () => {
-    if (!profesional.nombre || !profesional.especialidad || !profesional.ciudad || !profesional.imagen) {
+    if (
+      !profesional.nombre ||
+      !profesional.especialidad ||
+      !profesional.ciudad ||
+      !profesional.imagen
+    ) {
       return alert("Completa todos los campos incluyendo la imagen.");
     }
 
@@ -51,7 +56,7 @@ export default function AdminAddProfesional() {
       const refProfesionales = collection(db, "profesionales");
       await addDoc(refProfesionales, {
         ...profesional,
-        creado: Timestamp.now()
+        creado: Timestamp.now(),
       });
       alert("¡Profesional agregado con éxito!");
       setProfesional({ nombre: "", especialidad: "", ciudad: "", imagen: "" });

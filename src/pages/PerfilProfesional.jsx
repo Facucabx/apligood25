@@ -37,8 +37,7 @@ export default function PerfilProfesional() {
   const [tab, setTab] = useState("mensajes");
   const [subTab, setSubTab] = useState("positivas");
 
-  if (!profesional)
-    return <div className="p-4 text-center">Profesional no encontrado.</div>;
+  if (!profesional) return <div className="p-4 text-center">Profesional no encontrado.</div>;
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -51,11 +50,7 @@ export default function PerfilProfesional() {
       <div className="max-w-md mx-auto px-4 py-4">
         {/* Perfil */}
         <div className="flex items-center gap-4 bg-blue-100 p-4 rounded-lg shadow-sm mb-4">
-          <img
-            src={profesional.foto}
-            alt={profesional.nombre}
-            className="w-12 h-12 rounded-full"
-          />
+          <img src={profesional.foto} alt={profesional.nombre} className="w-12 h-12 rounded-full" />
           <div>
             <p className="text-sm text-gray-600">{profesional.profesion}</p>
             <p className="font-bold text-blue-800">{profesional.nombre}</p>
@@ -86,11 +81,7 @@ export default function PerfilProfesional() {
         {tab === "mensajes" && <MensajesTab />}
         {tab === "informacion" && <InformacionTab />}
         {tab === "reseñas" && (
-          <ResenasTab
-            profesional={profesional}
-            subTab={subTab}
-            setSubTab={setSubTab}
-          />
+          <ResenasTab profesional={profesional} subTab={subTab} setSubTab={setSubTab} />
         )}
         {tab === "contratar" && <ContratarTab />}
       </div>

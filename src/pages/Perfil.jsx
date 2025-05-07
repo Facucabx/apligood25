@@ -8,9 +8,7 @@ export default function Perfil() {
       </header>
 
       <div className="max-w-md mx-auto p-4">
-        <p className="text-center text-gray-600">
-          Acá vas a ver tu perfil y otras opciones.
-        </p>
+        <p className="text-center text-gray-600">Acá vas a ver tu perfil y otras opciones.</p>
       </div>
 
       <BottomNav />

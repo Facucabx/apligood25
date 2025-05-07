@@ -90,7 +90,9 @@ export default function Profesionales() {
               className="w-12 h-12 rounded-full"
             />
             <div className="flex-1">
-              <h3 className="text-base font-semibold text-gray-800 dark:text-white">{pro.nombre}</h3>
+              <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+                {pro.nombre}
+              </h3>
               <p className="text-xs text-gray-500 dark:text-gray-300">🛠️ {pro.especialidad}</p>
               <p className="text-xs text-gray-400">{pro.ciudad}</p>
             </div>
