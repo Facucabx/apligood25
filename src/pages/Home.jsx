@@ -1,19 +1,81 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import BottomNav from "../components/BottomNav";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const navigate = useNavigate();
 
+  const mensajes = [
+    {
+      texto: "Encontrá profesionales de confianza cerca tuyo",
+      boton: "Explorá profesionales",
+      ruta: "/profesionales",
+      fondo: "/images/fondo-profesionales.webp"
+    },
+    {
+      texto: "Reservá turnos de forma rápida y segura",
+      boton: "Reservá ahora",
+      ruta: "/reservas",
+      fondo: "/images/fondo-reservas.webp"
+    },
+    {
+      texto: "Reportá objetos perdidos y encontrados",
+      boton: "Ver objetos",
+      ruta: "/objetos",
+      fondo: "/images/fondo-objetos.webp"
+    },
+    {
+      texto: "Sugerí mejoras para tu comunidad",
+      boton: "Dejá tu sugerencia",
+      ruta: "/sugerencias",
+      fondo: "/images/fondo-sugerencias.webp"
+    }
+  ];
+
+  const [index, setIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setIndex((prev) => (prev + 1) % mensajes.length);
+        setFade(true);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(intervalo);
+  }, []);
+
   return (
     <Layout>
-      {/* Imagen con fondo y overlay */}
+      {/* Banner dinámico PRO */}
       <div className="relative w-full h-52 md:h-64 overflow-hidden rounded-xl shadow-md mx-auto mt-4">
         <img
-          src="/images/home-hero.jpg"
-          alt="Ciudad conectada"
-          className="absolute inset-0 w-full h-full object-cover"
+          key={mensajes[index].fondo}
+          src={mensajes[index].fondo}
+          alt="Fondo dinámico"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}
         />
+
+        {/* Gradiente suave para contraste */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+        {/* Contenido */}
+        <div className={`relative z-10 h-full flex flex-col items-center justify-center text-center px-4 transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}>
+          <h1 className="text-white text-lg md:text-2xl font-bold drop-shadow-md">
+            {mensajes[index].texto}
+          </h1>
+          <p className="text-white text-sm mt-1 drop-shadow-sm">
+            ¡Unite a la comunidad Apligood hoy mismo!
+          </p>
+          <button
+            onClick={() => navigate(mensajes[index].ruta)}
+            className="mt-3 bg-white/90 text-blue-700 font-semibold py-1 px-4 rounded-full text-sm shadow hover:bg-white transition"
+          >
+            {mensajes[index].boton}
+          </button>
+        </div>
       </div>
 
       {/* Contenido principal */}
