@@ -7,6 +7,8 @@ import Perfil from "./pages/Perfil";
 import PerfilProfesional from "./pages/PerfilProfesional"; // ✅ Import correcto
 import NuevoProfesional from "./pages/NuevoProfesional";
 import AdminProfesionales from "./pages/AdminProfesionales";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -20,6 +22,9 @@ export default function App() {
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/nuevo" element={<NuevoProfesional />} />
         <Route path="/admin" element={<AdminProfesionales />} />
+        <Route path="*" element={<div className="p-6 text-center">Página no encontrada 😕</div>} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );

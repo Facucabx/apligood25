@@ -1,20 +1,60 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
+
 export default function Login() {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (err) {
+      console.error(err.code);
+      switch (err.code) {
+        case "auth/user-not-found":
+          setError("El usuario no existe.");
+          break;
+        case "auth/wrong-password":
+          setError("Contraseña incorrecta.");
+          break;
+        case "auth/invalid-email":
+          setError("El correo no es válido.");
+          break;
+          default:
+            setError(`Error: ${err.code}`);
+            break;
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-50 px-4">
       <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm text-center">
-        <h1 className="text-3xl font-bold text-blue-600 mb-6">Apligood</h1>
-
-        <h2 className="text-lg font-semibold mb-1">¡Bienvenidos!</h2>
+        <h1 className="text-3xl font-bold text-blue-600 mb-2">Apligood</h1>
+        <h2 className="text-lg font-semibold">¡Bienvenidos!</h2>
         <p className="text-sm text-gray-500 mb-4">Ingresa a tu cuenta</p>
 
-        <form className="space-y-4 text-left">
+        {error && (
+          <p className="text-red-500 text-sm font-medium mb-2">{error}</p>
+        )}
+
+        <form className="space-y-4 text-left" onSubmit={handleLogin}>
           <input
-            type="text"
-            placeholder="Nombre de usuario"
+            type="email"
+            name="email"
+            placeholder="Correo electrónico"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="password"
+            name="password"
             placeholder="Contraseña"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -49,7 +89,7 @@ export default function Login() {
         </div>
 
         <div className="text-sm text-blue-600 space-y-1">
-          <a href="#" className="block hover:underline">
+          <a href="/register" className="block hover:underline">
             Crear cuenta
           </a>
           <a href="#" className="block hover:underline text-gray-500">

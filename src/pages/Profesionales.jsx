@@ -13,6 +13,8 @@ export default function Profesionales() {
   const [filtroCiudad, setFiltroCiudad] = useState("");
 
   useEffect(() => {
+    let montado = true;
+
     const fetchData = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "profesionales"));
@@ -20,18 +22,24 @@ export default function Profesionales() {
           id: doc.id,
           ...doc.data(),
         }));
-        setProfesionales(data);
 
-        const esp = [...new Set(data.map((p) => p.especialidad))];
-        const ciu = [...new Set(data.map((p) => p.ciudad))];
-        setEspecialidades(esp);
-        setCiudades(ciu);
+        if (montado) {
+          setProfesionales(data);
+
+          const esp = [...new Set(data.map((p) => p.especialidad))];
+          const ciu = [...new Set(data.map((p) => p.ciudad))];
+          setEspecialidades(esp);
+          setCiudades(ciu);
+        }
       } catch (error) {
         console.error("Error al traer profesionales:", error);
       }
     };
 
     fetchData();
+    return () => {
+      montado = false;
+    };
   }, []);
 
   const profesionalesFiltrados = profesionales.filter((pro) => {
@@ -76,23 +84,23 @@ export default function Profesionales() {
 
         <h2 className="text-sm text-gray-500 mb-4 font-semibold">Recomendados</h2>
 
-        {profesionalesFiltrados.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 italic">
-            No encontramos profesionales con ese filtro 😕
-          </div>
-        ) : (
+        {Array.isArray(profesionalesFiltrados) && profesionalesFiltrados.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {profesionalesFiltrados.map((pro) => (
               <TarjetaProfesional
                 key={pro.id}
+                id={pro.id}
                 nombre={pro.nombre}
                 especialidad={pro.especialidad}
                 ciudad={pro.ciudad}
-                rating={pro.rating || 5}
+                rating={pro.rating}
                 imagen={pro.avatar || "/images/avatar-default.webp"}
-                onReservar={() => alert(`Reservaste con ${pro.nombre}`)}
               />
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500 italic">
+            No encontramos profesionales con ese filtro 😕
           </div>
         )}
 
