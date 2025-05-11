@@ -8,30 +8,39 @@ export const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [nombre, setNombre] = useState("");
+  const [foto, setFoto] = useState("");
+
+  const refreshUserData = async (userFirebase) => {
+    try {
+      await userFirebase.reload();
+      const updatedUser = auth.currentUser;
+
+      setUser(updatedUser);
+
+      const docRef = doc(db, "usuarios", updatedUser.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setNombre(data.nombre || updatedUser.displayName || "");
+        setFoto(data.fotoURL || updatedUser.photoURL || "");
+      } else {
+        setNombre(updatedUser.displayName || "");
+        setFoto(updatedUser.photoURL || "");
+      }
+    } catch (err) {
+      console.error("Error actualizando usuario:", err);
+    }
+  };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (userFirebase) => {
+    const unsubscribe = onAuthStateChanged(auth, (userFirebase) => {
       if (userFirebase) {
-        setUser(userFirebase);
-
-        try {
-          const docRef = doc(db, "usuarios", userFirebase.uid);
-          const docSnap = await getDoc(docRef);
-
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setNombre(data.nombre || "");
-          } else {
-            setNombre("");
-          }
-        } catch (err) {
-          console.error("Error obteniendo el nombre:", err);
-          setNombre("");
-        }
-
+        refreshUserData(userFirebase);
       } else {
         setUser(null);
         setNombre("");
+        setFoto("");
       }
     });
 
@@ -39,7 +48,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, nombre }}>
+    <AuthContext.Provider value={{ user, setUser, nombre, setNombre, foto, setFoto, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

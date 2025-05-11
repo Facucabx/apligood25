@@ -1,18 +1,22 @@
 import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { updateProfile, deleteUser } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, storage } from "../firebase";
+import { auth, db, storage } from "../firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
 
 export default function Perfil() {
-  const { user } = useContext(AuthContext);
+  const { user, setUser, nombre, setNombre, setFoto } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [nombre, setNombre] = useState(user?.displayName || "");
+  const [nombreLocal, setNombreLocal] = useState(nombre || "");
   const [fotoPreview, setFotoPreview] = useState(user?.photoURL || "/images/avatar-default.png");
   const [archivo, setArchivo] = useState(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState("");
   const inputFileRef = useRef();
 
   const handleImagenSeleccionada = (e) => {
@@ -28,19 +32,46 @@ export default function Perfil() {
       let nuevaURL = user.photoURL;
 
       if (archivo) {
+        setSubiendoFoto(true);
         const storageRef = ref(storage, `avatares/${user.uid}`);
         await uploadBytes(storageRef, archivo);
         nuevaURL = await getDownloadURL(storageRef);
+        setSubiendoFoto(false);
       }
 
       await updateProfile(auth.currentUser, {
-        displayName: nombre,
+        displayName: nombreLocal,
         photoURL: nuevaURL,
       });
 
+      await setDoc(doc(db, "usuarios", user.uid), {
+        nombre: nombreLocal,
+        fotoURL: nuevaURL,
+        email: user.email,
+      });
+
+      await auth.currentUser.reload();
+      const userFirebase = auth.currentUser;
+      setUser(userFirebase);
+
+      const docRef = doc(db, "usuarios", userFirebase.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setNombre(data.nombre || userFirebase.displayName || "");
+        setFoto(data.fotoURL || userFirebase.photoURL || "");
+        setFotoPreview(data.fotoURL || userFirebase.photoURL || "/images/avatar-default.png");
+      } else {
+        setNombre(userFirebase.displayName || "");
+        setFoto(userFirebase.photoURL || "");
+        setFotoPreview(userFirebase.photoURL || "/images/avatar-default.png");
+      }
+
+      setMensajeExito("Foto actualizada con éxito ✅");
       toast.success("Perfil actualizado");
     } catch (error) {
-      console.error(error);
+      console.error("Error al actualizar perfil:", error);
       toast.error("Error al actualizar perfil");
     }
   };
@@ -59,53 +90,63 @@ export default function Perfil() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-4">Mi perfil</h2>
+    <Layout>
+      <div className="max-w-md mx-auto px-4 py-8 text-white text-center">
+        <h2 className="text-2xl font-bold mb-4">Mi perfil</h2>
 
-      <div className="flex flex-col items-center gap-4 mb-6">
-        <img
-          src={fotoPreview}
-          alt="avatar"
-          className="w-24 h-24 rounded-full object-cover border"
-        />
+        <div className="flex flex-col items-center gap-4 mb-6">
+          <img
+            src={fotoPreview}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/images/avatar-default.png";
+            }}
+            alt="avatar"
+            className="w-24 h-24 rounded-full object-cover border"
+          />
+          <button
+            onClick={() => inputFileRef.current.click()}
+            className="text-sm text-blue-400 hover:underline"
+          >
+            Cambiar foto
+          </button>
+          <input
+            type="file"
+            accept="image/*"
+            ref={inputFileRef}
+            onChange={handleImagenSeleccionada}
+            className="hidden"
+          />
+        </div>
+
+        <div className="mb-4 text-left">
+          <label className="block mb-1 text-sm font-medium">Nombre</label>
+          <input
+            type="text"
+            value={nombreLocal}
+            placeholder="Nombre"
+            onChange={(e) => setNombreLocal(e.target.value)}
+            className="w-full px-3 py-2 border rounded-lg text-black"
+          />
+        </div>
+
         <button
-          onClick={() => inputFileRef.current.click()}
-          className="text-sm text-blue-600 hover:underline"
+          onClick={handleGuardar}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-2"
         >
-          Cambiar foto
+          Guardar cambios
         </button>
-        <input
-          type="file"
-          accept="image/*"
-          ref={inputFileRef}
-          onChange={handleImagenSeleccionada}
-          className="hidden"
-        />
+
+        <button
+          onClick={handleEliminarCuenta}
+          className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
+        >
+          Eliminar cuenta
+        </button>
+
+        {subiendoFoto && <p className="text-sm text-blue-400 mt-4">Subiendo foto...</p>}
+        {mensajeExito && <p className="text-sm text-green-400 mt-2">{mensajeExito}</p>}
       </div>
-
-      <div className="mb-4">
-        <label className="block mb-1 text-sm font-medium">Nombre</label>
-        <input
-          type="text"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="w-full px-3 py-2 border rounded-lg text-black"
-        />
-      </div>
-
-      <button
-        onClick={handleGuardar}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-4"
-      >
-        Guardar cambios
-      </button>
-
-      <button
-        onClick={handleEliminarCuenta}
-        className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
-      >
-        Eliminar cuenta
-      </button>
-    </div>
+    </Layout>
   );
 }
