@@ -7,9 +7,13 @@ import { toast } from "react-toastify";
 export default function Login() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
     const email = e.target.email.value;
     const password = e.target.password.value;
 
@@ -32,6 +36,8 @@ export default function Login() {
           setError(`Error: ${err.code}`);
           break;
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,6 +59,7 @@ export default function Login() {
             placeholder="Correo electrónico"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
+            disabled={loading}
           />
           <input
             type="password"
@@ -60,12 +67,18 @@ export default function Login() {
             placeholder="Contraseña"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
+            disabled={loading}
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            disabled={loading}
+            className={`w-full text-white py-2 rounded-lg transition ${
+              loading
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            Acceder
+            {loading ? "Iniciando sesión..." : "Acceder"}
           </button>
         </form>
 
