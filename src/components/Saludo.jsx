@@ -1,25 +1,23 @@
-// Saludo.jsx
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-export default function Saludo({ nombre = "Facu" }) {
-  const hora = new Date().getHours();
-  let saludo = "Hola";
+export default function Saludo({ nombre }) {
+  const [momento, setMomento] = useState("Hola");
 
-  if (hora < 12) saludo = "Buen día";
-  else if (hora < 19) saludo = "Buenas tardes";
-  else saludo = "Buenas noches";
+  useEffect(() => {
+    const hora = new Date().getHours();
+    if (hora < 12) setMomento("Buen día");
+    else if (hora < 19) setMomento("Buenas tardes");
+    else setMomento("Buenas noches");
+  }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="w-full max-w-md mx-auto mt-6 px-4"
-    >
-      <h2 className="text-xl md:text-2xl font-semibold text-gray-100 dark:text-white drop-shadow">
-        {saludo}, {nombre} 👋
+    <div className="text-center mt-6">
+      <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">
+        {momento}, {nombre} 👋
       </h2>
-      <p className="text-sm text-gray-300 dark:text-gray-400 mt-1">¿Qué querés hacer hoy?</p>
-    </motion.div>
+      <p className="text-sm text-slate-600 dark:text-slate-300 mt-1 drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]">
+        ¿En qué te puedo ayudar hoy?
+      </p>
+    </div>
   );
 }

@@ -2,13 +2,15 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import BottomNav from "../components/BottomNav";
 import Saludo from "../components/Saludo";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { FaUserTie, FaCalendarAlt, FaSearch, FaLightbulb } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const mensajes = [
     {
@@ -58,6 +60,7 @@ export default function Home() {
     <Layout>
       <div className="flex flex-col min-h-screen pb-20">
         <main className="flex-1 w-full max-w-5xl mx-auto">
+
           <Saludo nombre="Facu" />
 
           {/* Banner dinámico */}

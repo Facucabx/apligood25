@@ -6,7 +6,9 @@
 @tailwind utilities;
 
 /* ------------------- Estilos base ------------------- */
-
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
 body {
   font-family: 'Inter', sans-serif;
   font-size: 1rem;

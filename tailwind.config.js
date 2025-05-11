@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // 👈 ESTA LÍNEA ES CLAVE
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
     './public/index.html'
@@ -13,7 +14,7 @@ module.exports = {
           200: '#c7d2fe',
           300: '#a5b4fc',
           400: '#818cf8',
-          500: '#6366f1', // tu color principal
+          500: '#6366f1',
           600: '#4f46e5',
           700: '#4338ca',
           800: '#3730a3',
@@ -55,8 +56,8 @@ module.exports = {
         10:'2.5rem'
       },
       borderRadius: {
-        DEFAULT: '0.5rem', // 2xl rounded
-        md: '0.375rem',    // rounded-md
+        DEFAULT: '0.5rem',
+        md: '0.375rem',
         lg: '0.75rem'
       }
     }
