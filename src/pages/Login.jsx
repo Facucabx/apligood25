@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,9 +15,9 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      toast.success("¡Bienvenido Facu!");
       navigate("/");
     } catch (err) {
-      console.error(err.code);
       switch (err.code) {
         case "auth/user-not-found":
           setError("El usuario no existe.");
@@ -27,9 +28,9 @@ export default function Login() {
         case "auth/invalid-email":
           setError("El correo no es válido.");
           break;
-          default:
-            setError(`Error: ${err.code}`);
-            break;
+        default:
+          setError(`Error: ${err.code}`);
+          break;
       }
     }
   };
@@ -51,12 +52,14 @@ export default function Login() {
             name="email"
             placeholder="Correo electrónico"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            required
           />
           <input
             type="password"
             name="password"
             placeholder="Contraseña"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            required
           />
           <button
             type="submit"
@@ -89,12 +92,12 @@ export default function Login() {
         </div>
 
         <div className="text-sm text-blue-600 space-y-1">
-          <a href="/register" className="block hover:underline">
+          <Link to="/register" className="block hover:underline">
             Crear cuenta
-          </a>
-          <a href="#" className="block hover:underline text-gray-500">
+          </Link>
+          <Link to="#" className="block hover:underline text-gray-500">
             Recuperar contraseña
-          </a>
+          </Link>
         </div>
       </div>
     </div>

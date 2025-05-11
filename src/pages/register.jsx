@@ -1,62 +1,71 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase"; // 👈 CORREGIDO
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/"); // te lleva al home al registrarte
+      navigate("/");
     } catch (err) {
-      setError("Error al registrar: " + err.message);
+      switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("El correo ya está registrado.");
+          break;
+        case "auth/invalid-email":
+          setError("Correo inválido.");
+          break;
+        case "auth/weak-password":
+          setError("La contraseña debe tener al menos 6 caracteres.");
+          break;
+        default:
+          setError(`Error: ${err.message}`);
+          break;
+      }
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-green-50 px-4">
       <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm text-center">
-        <h1 className="text-3xl font-bold text-blue-600 mb-6">Apligood</h1>
-        <h2 className="text-lg font-semibold mb-1">Crear cuenta</h2>
-        <p className="text-sm text-gray-500 mb-4">Registrate gratis</p>
-
-        <form onSubmit={handleRegister} className="space-y-4 text-left">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+        <h1 className="text-3xl font-bold text-green-600 mb-2">Registrarse</h1>
+        <p className="text-sm text-gray-500 mb-4">Crea una cuenta nueva</p>
+        {error && <p className="text-red-500 text-sm font-medium mb-2">{error}</p>}
+        <form onSubmit={handleRegister} className="space-y-4">
           <input
             type="email"
-            placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            placeholder="Correo"
+            className="w-full border border-gray-300 rounded-md p-2"
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="password"
+            name="password"
             placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 rounded-md p-2"
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
           >
-            Registrarse
+            Registrarme
           </button>
         </form>
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="text-sm mt-4">
           ¿Ya tenés cuenta?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
-            Iniciá sesión
-          </a>
+          <Link to="/login" className="text-green-600 font-semibold hover:underline">
+            Iniciar sesión
+          </Link>
         </p>
       </div>
     </div>
