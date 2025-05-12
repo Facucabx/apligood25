@@ -4,10 +4,10 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDznNrsi8oVLLfbVfwVK2d6dYt-_LUYBg",
+  apiKey: "AIzaSyDznNrsi8oVLLfbVfwuVK2dd6Yt-_LUYBg",
   authDomain: "apligood2025.firebaseapp.com",
   projectId: "apligood2025",
-  storageBucket: "apligood2025.appspot.com",
+  storageBucket: "apligood2025.firebasestorage.app",
   messagingSenderId: "820543904439",
   appId: "1:820543904439:web:9a3dd5fc603c3ccebc4b32"
 };
