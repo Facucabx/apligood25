@@ -2,86 +2,81 @@ import { useContext, useRef, useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useNavigate, Outlet } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
+import BottomNav from "./BottomNav";
+import { FaSun, FaMoon, FaUser, FaSignOutAlt } from "react-icons/fa";
 
-export default function Layout({ children }) {
-  const { user, nombre, foto, refrescarUsuario } = useContext(AuthContext);
+export default function Layout() {
+  const { user, nombre, foto } = useContext(AuthContext);
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const menuRef = useRef();
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuAbierto(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast.success("Sesión cerrada correctamente");
       navigate("/login");
     } catch (err) {
-      toast.error("Error al cerrar sesión");
+      console.error("Error al cerrar sesión", err);
     }
   };
 
-  const fotoActual = foto || user?.photoURL || "/images/avatar-default.png";
+  useEffect(() => {
+    function manejarClickFuera(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuAbierto(false);
+      }
+    }
+    document.addEventListener("mousedown", manejarClickFuera);
+    return () => document.removeEventListener("mousedown", manejarClickFuera);
+  }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-slate-900 dark:bg-gray-900 dark:text-white transition-colors duration-300">
-      <header className="bg-blue-600 text-white p-4 flex justify-between items-center relative z-20">
-        <h1 className="text-lg font-bold cursor-pointer" onClick={() => navigate("/")}>
+    <div className="flex flex-col min-h-screen bg-neutral-900 text-white">
+      <header className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+        <div className="font-bold text-lg cursor-pointer" onClick={() => navigate("/")}>
           Apligood
-        </h1>
-
+        </div>
         {user && (
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuAbierto(!menuAbierto)}
-              className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-blue-500 transition-all"
+              className="flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 hover:bg-white/10 transition"
             >
               <img
-                src={fotoActual}
-                alt="avatar"
-                onError={(e) => (e.target.src = "/images/avatar-default.png")}
-                className="w-8 h-8 rounded-full object-cover border border-white"
+                src={foto || "https://ui-avatars.com/api/?name=Apligood"}
+                alt="Avatar"
+                className="w-8 h-8 rounded-full object-cover"
               />
-              <span className="text-sm font-medium">{nombre || "Usuario"}</span>
+              <span className="hidden md:block text-sm">{nombre || "Usuario"}</span>
             </button>
-
             {menuAbierto && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl overflow-hidden text-sm text-gray-800 dark:text-gray-200">
+              <div className="absolute right-0 mt-2 w-48 bg-neutral-800 rounded-lg shadow-lg overflow-hidden z-50">
                 <button
+                  className="w-full flex items-center gap-2 p-3 hover:bg-neutral-700 transition"
                   onClick={() => {
-                    navigate("/perfil");
                     setMenuAbierto(false);
+                    navigate("/perfil");
                   }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
-                  👤 Mi cuenta
+                  <FaUser /> Mi cuenta
                 </button>
                 <button
+                  className="w-full flex items-center gap-2 p-3 hover:bg-neutral-700 transition"
                   onClick={() => {
                     toggleDarkMode();
                     setMenuAbierto(false);
                   }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                 >
-                  {darkMode ? "☀️ Modo claro" : "🌙 Modo oscuro"}
+                  {darkMode ? <FaSun /> : <FaMoon />} Modo {darkMode ? "Claro" : "Oscuro"}
                 </button>
                 <button
+                  className="w-full flex items-center gap-2 p-3 text-red-400 hover:bg-red-700 hover:text-white transition"
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-red-500"
                 >
-                  🔓 Cerrar sesión
+                  <FaSignOutAlt /> Cerrar sesión
                 </button>
               </div>
             )}
@@ -89,7 +84,13 @@ export default function Layout({ children }) {
         )}
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-y-auto p-4">
+        <Outlet />
+      </main>
+
+      <footer className="sticky bottom-0 w-full">
+        <BottomNav />
+      </footer>
     </div>
   );
 }

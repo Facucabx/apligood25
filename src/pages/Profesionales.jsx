@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import Layout from "../components/Layout";
-import BottomNav from "../components/BottomNav";
 import TarjetaProfesional from "../components/TarjetaProfesional";
 
 export default function Profesionales() {
@@ -50,70 +48,66 @@ export default function Profesionales() {
   });
 
   return (
-    <Layout>
-      <div className="container py-6">
-        <h1 className="section-title">Buscar profesionales</h1>
+    <div className="container py-6">
+      <h1 className="section-title">Buscar profesionales</h1>
 
-        <div className="flex flex-col gap-2 mb-6">
-          <select
-            value={filtroEspecialidad}
-            onChange={(e) => setFiltroEspecialidad(e.target.value)}
-            className="px-3 py-2 border rounded text-black"
-          >
-            <option value="">Todas las especialidades</option>
-            {especialidades.map((esp, i) => (
-              <option key={i} value={esp}>
-                {esp}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filtroCiudad}
-            onChange={(e) => setFiltroCiudad(e.target.value)}
-            className="px-3 py-2 border rounded text-black"
-          >
-            <option value="">Todas las ciudades</option>
-            {ciudades.map((ciu, i) => (
-              <option key={i} value={ciu}>
-                {ciu}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <h2 className="text-sm text-gray-500 mb-4 font-semibold">Recomendados</h2>
-
-        {Array.isArray(profesionalesFiltrados) && profesionalesFiltrados.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {profesionalesFiltrados.map((pro) => (
-              <TarjetaProfesional
-                key={pro.id}
-                id={pro.id}
-                nombre={pro.nombre}
-                especialidad={pro.especialidad}
-                ciudad={pro.ciudad}
-                rating={pro.rating}
-                imagen={pro.avatar || "/images/avatar-default.webp"}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500 italic">
-            No encontramos profesionales con ese filtro 😕
-          </div>
-        )}
-
-        {/* Botón flotante para agregar */}
-        <a
-          href="/nuevo"
-          className="fixed bottom-20 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+      <div className="flex flex-col gap-2 mb-6">
+        <select
+          value={filtroEspecialidad}
+          onChange={(e) => setFiltroEspecialidad(e.target.value)}
+          className="px-3 py-2 border rounded text-black"
         >
-          ➕
-        </a>
+          <option value="">Todas las especialidades</option>
+          {especialidades.map((esp, i) => (
+            <option key={i} value={esp}>
+              {esp}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={filtroCiudad}
+          onChange={(e) => setFiltroCiudad(e.target.value)}
+          className="px-3 py-2 border rounded text-black"
+        >
+          <option value="">Todas las ciudades</option>
+          {ciudades.map((ciu, i) => (
+            <option key={i} value={ciu}>
+              {ciu}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <BottomNav />
-    </Layout>
+      <h2 className="text-sm text-gray-500 mb-4 font-semibold">Recomendados</h2>
+
+      {Array.isArray(profesionalesFiltrados) && profesionalesFiltrados.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {profesionalesFiltrados.map((pro) => (
+            <TarjetaProfesional
+              key={pro.id}
+              id={pro.id}
+              nombre={pro.nombre}
+              especialidad={pro.especialidad}
+              ciudad={pro.ciudad}
+              rating={pro.rating}
+              imagen={pro.avatar || "/images/avatar-default.webp"}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500 italic">
+          No encontramos profesionales con ese filtro 😕
+        </div>
+      )}
+
+      {/* Botón flotante para agregar */}
+      <a
+        href="/nuevo"
+        className="fixed bottom-20 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+      >
+        ➕
+      </a>
+    </div>
   );
 }
