@@ -1,152 +1,132 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { updateProfile, deleteUser } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, db, storage } from "../firebase";
+import { storage, db, auth } from "../firebase";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { doc, deleteDoc } from "firebase/firestore";
+import { deleteUser } from "firebase/auth";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Layout from "../components/Layout";
 
 export default function Perfil() {
-  const { user, setUser, nombre, setNombre, setFoto } = useContext(AuthContext);
+  const { nombre, foto, actualizarPerfil } = useContext(AuthContext);
+  const [nuevoNombre, setNuevoNombre] = useState(nombre);
+  const [nuevaFoto, setNuevaFoto] = useState(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const navigate = useNavigate();
 
-  const [nombreLocal, setNombreLocal] = useState(nombre || "");
-  const [fotoPreview, setFotoPreview] = useState(user?.photoURL || "/images/avatar-default.png");
-  const [archivo, setArchivo] = useState(null);
-  const [subiendoFoto, setSubiendoFoto] = useState(false);
-  const [mensajeExito, setMensajeExito] = useState("");
-  const inputFileRef = useRef();
-
-  const handleImagenSeleccionada = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setArchivo(file);
-      setFotoPreview(URL.createObjectURL(file));
-    }
-  };
-
   const handleGuardar = async () => {
-    try {
-      let nuevaURL = user.photoURL;
+    if (!auth.currentUser) {
+      toast.error("Usuario no cargado.");
+      return;
+    }
 
-      if (archivo) {
+    if (!nuevoNombre.trim()) {
+      toast.error("El nombre no puede estar vacío.");
+      return;
+    }
+
+    try {
+      setGuardando(true);
+      let urlFoto = auth.currentUser.photoURL || foto;
+
+      if (nuevaFoto) {
         setSubiendoFoto(true);
-        const storageRef = ref(storage, `avatares/${user.uid}`);
-        await uploadBytes(storageRef, archivo);
-        nuevaURL = await getDownloadURL(storageRef);
+        const fotoRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+        await uploadBytes(fotoRef, nuevaFoto);
+        urlFoto = await getDownloadURL(fotoRef);
         setSubiendoFoto(false);
       }
 
-      await updateProfile(auth.currentUser, {
-        displayName: nombreLocal,
-        photoURL: nuevaURL,
-      });
+      await actualizarPerfil(nuevoNombre, urlFoto);
 
-      await setDoc(doc(db, "usuarios", user.uid), {
-        nombre: nombreLocal,
-        fotoURL: nuevaURL,
-        email: user.email,
-      });
-
-      await auth.currentUser.reload();
-      const userFirebase = auth.currentUser;
-      setUser(userFirebase);
-
-      const docRef = doc(db, "usuarios", userFirebase.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setNombre(data.nombre || userFirebase.displayName || "");
-        setFoto(data.fotoURL || userFirebase.photoURL || "");
-        setFotoPreview(data.fotoURL || userFirebase.photoURL || "/images/avatar-default.png");
-      } else {
-        setNombre(userFirebase.displayName || "");
-        setFoto(userFirebase.photoURL || "");
-        setFotoPreview(userFirebase.photoURL || "/images/avatar-default.png");
-      }
-
-      setMensajeExito("Foto actualizada con éxito ✅");
-      toast.success("Perfil actualizado");
+      toast.success("Perfil actualizado correctamente");
     } catch (error) {
-      console.error("Error al actualizar perfil:", error);
-      toast.error("Error al actualizar perfil");
+      console.error(error);
+      toast.error("Error al actualizar el perfil.");
+    } finally {
+      setGuardando(false);
     }
   };
 
   const handleEliminarCuenta = async () => {
-    if (!window.confirm("¿Seguro que querés eliminar tu cuenta? Esta acción no se puede deshacer.")) return;
+    if (!auth.currentUser) {
+      toast.error("Usuario no cargado.");
+      return;
+    }
 
     try {
+      if (!confirm("¿Seguro que deseas eliminar tu cuenta? Esta acción no se puede deshacer.")) return;
+
+      if (foto) {
+        const fotoRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+        await deleteObject(fotoRef).catch(() => {});
+      }
+
+      await deleteDoc(doc(db, "usuarios", auth.currentUser.uid));
       await deleteUser(auth.currentUser);
+
       toast.success("Cuenta eliminada");
       navigate("/login");
     } catch (error) {
-      console.error(error);
-      toast.error("No se pudo eliminar la cuenta. Reautenticá e intentá de nuevo.");
+      toast.error("Error al eliminar cuenta.");
     }
   };
 
   return (
-    <Layout>
-      <div className="max-w-md mx-auto px-4 py-8 text-white text-center">
-        <h2 className="text-2xl font-bold mb-4">Mi perfil</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-gray-900 p-4">
+      <h1 className="text-2xl font-bold mb-6">Mi perfil</h1>
 
-        <div className="flex flex-col items-center gap-4 mb-6">
-          <img
-            src={fotoPreview}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/images/avatar-default.png";
-            }}
-            alt="avatar"
-            className="w-24 h-24 rounded-full object-cover border"
-          />
-          <button
-            onClick={() => inputFileRef.current.click()}
-            className="text-sm text-blue-400 hover:underline"
-          >
-            Cambiar foto
-          </button>
-          <input
-            type="file"
-            accept="image/*"
-            ref={inputFileRef}
-            onChange={handleImagenSeleccionada}
-            className="hidden"
-          />
-        </div>
+      <label htmlFor="foto" className="cursor-pointer relative group">
+        <img
+          src={
+            nuevaFoto
+              ? URL.createObjectURL(nuevaFoto)
+              : foto || "https://via.placeholder.com/100?text=U"
+          }
+          alt="Avatar"
+          className={`w-24 h-24 rounded-full object-cover border-4 ${
+            subiendoFoto ? "opacity-50 grayscale" : "border-blue-600"
+          }`}
+        />
+        {subiendoFoto && (
+          <span className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center text-xs bg-black bg-opacity-50 text-white rounded-full">
+            Subiendo...
+          </span>
+        )}
+      </label>
+      <input
+        id="foto"
+        type="file"
+        accept="image/*"
+        onChange={(e) => setNuevaFoto(e.target.files[0])}
+        className="hidden"
+      />
 
-        <div className="mb-4 text-left">
-          <label className="block mb-1 text-sm font-medium">Nombre</label>
-          <input
-            type="text"
-            value={nombreLocal}
-            placeholder="Nombre"
-            onChange={(e) => setNombreLocal(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg text-black"
-          />
-        </div>
+      <input
+        type="text"
+        value={nuevoNombre}
+        onChange={(e) => setNuevoNombre(e.target.value)}
+        placeholder="Tu nombre"
+        className="mt-6 mb-4 px-4 py-2 border rounded w-64 text-center dark:bg-gray-800 dark:text-white"
+      />
 
-        <button
-          onClick={handleGuardar}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-2"
-        >
-          Guardar cambios
-        </button>
+      <button
+        onClick={handleGuardar}
+        disabled={guardando}
+        className={`bg-blue-600 text-white px-6 py-2 rounded mb-4 hover:bg-blue-700 transition-all ${
+          guardando ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      >
+        {guardando ? "Guardando..." : "Guardar cambios"}
+      </button>
 
-        <button
-          onClick={handleEliminarCuenta}
-          className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
-        >
-          Eliminar cuenta
-        </button>
-
-        {subiendoFoto && <p className="text-sm text-blue-400 mt-4">Subiendo foto...</p>}
-        {mensajeExito && <p className="text-sm text-green-400 mt-2">{mensajeExito}</p>}
-      </div>
-    </Layout>
+      <button
+        onClick={handleEliminarCuenta}
+        className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition-all"
+      >
+        Eliminar cuenta
+      </button>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, updateProfile } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
 
 export const AuthContext = createContext();
 
@@ -10,45 +10,49 @@ export function AuthProvider({ children }) {
   const [nombre, setNombre] = useState("");
   const [foto, setFoto] = useState("");
 
-  const refreshUserData = async (userFirebase) => {
-    try {
-      await userFirebase.reload();
-      const updatedUser = auth.currentUser;
-
-      setUser(updatedUser);
-
-      const docRef = doc(db, "usuarios", updatedUser.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setNombre(data.nombre || updatedUser.displayName || "");
-        setFoto(data.fotoURL || updatedUser.photoURL || "");
-      } else {
-        setNombre(updatedUser.displayName || "");
-        setFoto(updatedUser.photoURL || "");
-      }
-    } catch (err) {
-      console.error("Error actualizando usuario:", err);
-    }
-  };
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (userFirebase) => {
+    const unsubscribe = onAuthStateChanged(auth, async (userFirebase) => {
       if (userFirebase) {
-        refreshUserData(userFirebase);
+        setUser(userFirebase);
+        const docSnap = await getDoc(doc(db, "usuarios", userFirebase.uid));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setNombre(data.nombre || userFirebase.displayName || "");
+          setFoto(data.fotoUrl || userFirebase.photoURL || "");
+        } else {
+          setNombre(userFirebase.displayName || "");
+          setFoto(userFirebase.photoURL || "");
+        }
       } else {
         setUser(null);
         setNombre("");
         setFoto("");
       }
     });
-
     return () => unsubscribe();
   }, []);
 
+  const actualizarPerfil = async (nuevoNombre, nuevaFotoUrl) => {
+    if (!auth.currentUser) throw new Error("No hay usuario autenticado");
+
+    const usuarioRef = doc(db, "usuarios", auth.currentUser.uid);
+
+    await setDoc(usuarioRef, {
+      nombre: nuevoNombre,
+      fotoUrl: nuevaFotoUrl,
+    }, { merge: true });
+
+    await updateProfile(auth.currentUser, {
+      displayName: nuevoNombre,
+      photoURL: nuevaFotoUrl,
+    });
+
+    setNombre(nuevoNombre);
+    setFoto(nuevaFotoUrl);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, nombre, setNombre, foto, setFoto, refreshUserData }}>
+    <AuthContext.Provider value={{ user, nombre, foto, actualizarPerfil }}>
       {children}
     </AuthContext.Provider>
   );
