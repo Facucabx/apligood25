@@ -10,19 +10,23 @@ export function AuthProvider({ children }) {
   const [nombre, setNombre] = useState("");
   const [foto, setFoto] = useState("");
 
+  const cargarDatosUsuario = async (userFirebase) => {
+    const docSnap = await getDoc(doc(db, "usuarios", userFirebase.uid));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      setNombre(data.nombre || userFirebase.displayName || "");
+      setFoto(data.fotoUrl || userFirebase.photoURL || "");
+    } else {
+      setNombre(userFirebase.displayName || "");
+      setFoto(userFirebase.photoURL || "");
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (userFirebase) => {
       if (userFirebase) {
         setUser(userFirebase);
-        const docSnap = await getDoc(doc(db, "usuarios", userFirebase.uid));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setNombre(data.nombre || userFirebase.displayName || "");
-          setFoto(data.fotoUrl || userFirebase.photoURL || "");
-        } else {
-          setNombre(userFirebase.displayName || "");
-          setFoto(userFirebase.photoURL || "");
-        }
+        await cargarDatosUsuario(userFirebase);
       } else {
         setUser(null);
         setNombre("");
@@ -47,6 +51,8 @@ export function AuthProvider({ children }) {
       photoURL: nuevaFotoUrl,
     });
 
+    // Refrescar usuario y contexto después de actualizar
+    await auth.currentUser.reload();
     setNombre(nuevoNombre);
     setFoto(nuevaFotoUrl);
   };
