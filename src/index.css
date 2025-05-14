@@ -1,5 +1,4 @@
 @import "@fontsource/inter/index.css";
-@import "@fontsource/poppins/index.css";
 
 @tailwind base;
 @tailwind components;
@@ -7,86 +6,28 @@
 
 :root {
   --primary-color: #3B82F6;
-  --danger-color: #E53935;
+  --primary-gradient: linear-gradient(to right, #3B82F6, #6366F1);
+  --danger-color: #F43F5E;
+  --background-light: #F9FAFB;
+  --background-dark: #111827;
 }
 
 body {
-  margin: 0;
+  background-color: var(--background-light);
+  color: #111;
   font-family: 'Inter', sans-serif;
   transition: background-color 0.3s, color 0.3s;
 }
 
+body.dark {
+  background-color: var(--background-dark);
+  color: #FFF;
+}
+
 button {
-  @apply font-semibold rounded cursor-pointer transition-all;
+  @apply rounded-xl font-semibold transition-all;
 }
 
 button:hover {
-  transform: scale(1.02);
-}
-
-.btn-primary {
-  @apply bg-blue-600 text-white px-6 py-2 border-none hover:bg-blue-700;
-}
-
-.btn-danger {
-  @apply bg-red-600 text-white px-6 py-2 border-none hover:bg-red-700;
-}
-
-.menu-usuario {
-  @apply backdrop-blur bg-white/85 text-gray-900 dark:bg-gray-800 dark:text-white shadow-lg rounded-lg p-2 w-48 border border-gray-200 dark:border-gray-700;
-}
-
-.perfil-container {
-  @apply bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg max-w-md mx-auto my-12 text-center transition-all;
-}
-
-.avatar {
-  @apply w-28 h-28 rounded-full object-cover border-4 border-blue-600 shadow-lg hover:opacity-80 transition-all mb-4;
-}
-
-h1, h2, h3, h4, h5 {
-  @apply font-bold;
-}
-
-p {
-  @apply text-gray-500 text-sm;
-}
-
-a {
-  @apply text-blue-600 no-underline hover:underline;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(100, 100, 100, 0.4);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 100, 100, 0.6);
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-@layer utilities {
-  @keyframes fade-in-keyframes {
-    0% {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fade-in-keyframes 0.3s ease-out forwards;
-  }
+  @apply scale-105 shadow-lg;
 }

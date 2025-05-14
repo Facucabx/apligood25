@@ -42,10 +42,6 @@ export default function Perfil() {
       toast.warning("Por favor ingresa un nombre válido.");
       return;
     }
-    if (!user) {
-      toast.error("Usuario no cargado.");
-      return;
-    }
 
     setCargando(true);
     try {
@@ -56,7 +52,6 @@ export default function Perfil() {
         const fotoRef = ref(storage, `avatars/${user.uid}`);
         await uploadBytes(fotoRef, nuevaFoto);
         urlFotoActualizada = await getDownloadURL(fotoRef);
-        toast.success("Foto actualizada.");
       }
 
       await updateDoc(usuarioRef, {
@@ -87,31 +82,29 @@ export default function Perfil() {
 
   const handleEliminarCuenta = async () => {
     if (!user) return;
-    try {
-      if (confirm("¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.")) {
+    if (confirm("¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.")) {
+      try {
         await deleteDoc(doc(db, "usuarios", user.uid));
         await deleteUser(auth.currentUser);
         toast.success("Cuenta eliminada.");
         navigate("/login");
+      } catch (error) {
+        toast.error("Error al eliminar cuenta.");
       }
-    } catch (error) {
-      toast.error("Error al eliminar cuenta.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4 transition-all duration-300">
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg w-full max-w-md space-y-6 animate-fade-in relative">
-        {/* Saludo personalizado */}
-        <h1 className="text-2xl font-bold text-center">Hola, {nombre || "Usuario"} 👋</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-backgroundLight dark:bg-backgroundDark text-gray-900 dark:text-white p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-2xl w-full max-w-md space-y-6">
+        <h1 className="text-center text-2xl font-bold">Hola, {nombre} 👋</h1>
 
-        {/* Avatar */}
         <div className="flex flex-col items-center space-y-2">
           <label htmlFor="foto" className="cursor-pointer relative group">
             <img
               src={nuevaFoto ? URL.createObjectURL(nuevaFoto) : fotoUrl || "https://via.placeholder.com/100?text=U"}
               alt="Avatar"
-              className="w-28 h-28 rounded-full object-cover border-4 border-blue-600 shadow-lg hover:opacity-80 transition-all"
+              className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg hover:opacity-80 transition-all"
             />
             <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
               Cambiar foto
@@ -120,38 +113,36 @@ export default function Perfil() {
           <input id="foto" type="file" accept="image/*" onChange={handleCambiarFoto} className="hidden" />
         </div>
 
-        {/* Nombre */}
         <input
           type="text"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Tu nombre"
-          className="px-4 py-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-center"
+          className="px-4 py-2 rounded bg-gray-100 dark:bg-gray-700 text-center"
         />
 
-        {/* Guardar */}
         <button
           onClick={handleGuardar}
           disabled={cargando}
-          className={`flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-semibold transition-all w-full ${
+          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-full font-semibold transition-all w-full ${
             cargando ? "opacity-60 cursor-not-allowed" : ""
           }`}
         >
           {cargando && <FaSpinner className="animate-spin" />} Guardar cambios
         </button>
 
-        {/* Eliminar cuenta */}
-        <div className="border-t border-gray-300 dark:border-gray-600 pt-4">
+        <div className="border-t border-gray-600 pt-4">
           <button
             onClick={handleEliminarCuenta}
-            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-semibold transition-all w-full"
+            className="flex items-center justify-center gap-2 bg-danger text-white px-6 py-2 rounded-full font-semibold transition-all w-full"
           >
-            <FaTrash /> Eliminar cuenta 🗑️
+            <FaTrash /> Eliminar cuenta
           </button>
         </div>
 
-        {/* Mensaje humanizador */}
-        <p className="text-xs text-gray-500 text-center mt-4">Tu información está segura con nosotros.</p>
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
+          Tu información está segura con nosotros.
+        </p>
       </div>
     </div>
   );
