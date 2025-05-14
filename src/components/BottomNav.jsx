@@ -3,27 +3,27 @@ import { FaHome, FaUserTie, FaCalendarAlt, FaSearch, FaUser } from "react-icons/
 
 export default function BottomNav() {
   const navItems = [
-    { to: "/", label: "Inicio", icon: <FaHome /> },
-    { to: "/profesionales", label: "Profs", icon: <FaUserTie /> },
-    { to: "/reservas", label: "Reservas", icon: <FaCalendarAlt /> },
-    { to: "/objetos", label: "Objetos", icon: <FaSearch /> },
-    { to: "/perfil", label: "Perfil", icon: <FaUser /> },
+    { label: "Inicio", icon: <FaHome />, to: "/" },
+    { label: "Profs", icon: <FaUserTie />, to: "/profesionales" },
+    { label: "Reservas", icon: <FaCalendarAlt />, to: "/reservas" },
+    { label: "Objetos", icon: <FaSearch />, to: "/objetos" },
+    { label: "Perfil", icon: <FaUser />, to: "/perfil" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-md bg-slate-900/80 shadow-inner border-t border-slate-700">
-      <ul className="flex justify-around items-center py-3">
-        {navItems.map((item, index) => (
-          <li key={index}>
+    <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-md bg-slate-900/80 shadow-inner z-50 border-t border-slate-700">
+      <ul className="flex justify-around items-center h-16">
+        {navItems.map((item) => (
+          <li key={item.to}>
             <NavLink
               to={item.to}
               className={({ isActive }) =>
-                `flex flex-col items-center text-xs ${
-                  isActive ? "text-blue-500 font-semibold" : "text-white/70 hover:text-blue-400"
-                } transition-colors duration-300`
+                `flex flex-col items-center text-xs transition-transform duration-300 ${
+                  isActive ? "text-blue-400 scale-105" : "text-slate-400"
+                } hover:text-blue-500 hover:scale-110`
               }
             >
-              <div className="text-xl mb-1">{item.icon}</div>
+              <span className="text-xl mb-1">{item.icon}</span>
               {item.label}
             </NavLink>
           </li>

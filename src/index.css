@@ -1,33 +1,7 @@
-@import "@fontsource/inter/index.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary-color: #3B82F6;
-  --primary-gradient: linear-gradient(to right, #3B82F6, #6366F1);
-  --danger-color: #F43F5E;
-  --background-light: #F9FAFB;
-  --background-dark: #111827;
-}
-
 body {
-  background-color: var(--background-light);
-  color: #111;
-  font-family: 'Inter', sans-serif;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-body.dark {
-  background-color: var(--background-dark);
-  color: #FFF;
-}
-
-button {
-  @apply rounded-xl font-semibold transition-all;
-}
-
-button:hover {
-  @apply scale-105 shadow-lg;
+  @apply bg-slate-900 text-white;
 }

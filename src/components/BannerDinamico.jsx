@@ -1,82 +1,70 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
-const mensajes = [
+const banners = [
   {
+    fondo: "/images/fondo-profesionales.webp",
     texto: "Conectá con profesionales de confianza cerca tuyo",
     boton: "Explorá profesionales",
     ruta: "/profesionales",
-    fondo: "/images/fondo-profesionales.webp",
-    colorBoton: "bg-blue-600 hover:bg-blue-700",
   },
   {
+    fondo: "/images/fondo-reservas.webp",
     texto: "Reservá turnos de forma rápida y segura",
     boton: "Reservá ahora",
     ruta: "/reservas",
-    fondo: "/images/fondo-reservas.webp",
-    colorBoton: "bg-purple-600 hover:bg-purple-700",
   },
   {
+    fondo: "/images/fondo-objetos.webp",
     texto: "Reportá objetos perdidos o encontrados fácilmente",
     boton: "Ver objetos",
     ruta: "/objetos",
-    fondo: "/images/fondo-objetos.webp",
-    colorBoton: "bg-emerald-600 hover:bg-emerald-700",
   },
   {
+    fondo: "/images/fondo-sugerencias.webp",
     texto: "Sugerí ideas para mejorar tu comunidad",
     boton: "Dejá tu sugerencia",
     ruta: "/sugerencias",
-    fondo: "/images/fondo-sugerencias.webp",
-    colorBoton: "bg-yellow-400 hover:bg-yellow-300 text-black",
   },
 ];
 
-export default function BannerDinamico() {
+export default function BannerDinamico({ onNavigate }) {
   const [index, setIndex] = useState(0);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % mensajes.length);
-    }, 6000);
+      setIndex((prev) => (prev + 1) % banners.length);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
+  const bannerActual = banners[index];
+
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl">
+    <div className="relative w-full h-56 md:h-64 overflow-hidden rounded-2xl shadow-xl">
       <AnimatePresence mode="wait">
         <motion.img
-          key={mensajes[index].fondo}
-          src={mensajes[index].fondo}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 1 }}
-          alt="Fondo dinámico"
+          key={bannerActual.fondo}
+          src={bannerActual.fondo}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          alt="Banner dinámico"
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => (e.target.style.display = "none")}
         />
       </AnimatePresence>
-
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-2xl transition-all duration-700"></div>
-
-      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6 animate-fade-in">
-        <h2 className="text-white text-2xl md:text-3xl font-extrabold drop-shadow-xl mb-2">
-          {mensajes[index].texto}
-        </h2>
-        <p className="text-white/80 text-sm mb-4">
-          ¡Unite a la comunidad Apligood hoy mismo!
-        </p>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-md rounded-2xl" />
+      <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+        <h1 className="text-white text-lg md:text-2xl font-bold drop-shadow-lg">
+          {bannerActual.texto}
+        </h1>
         <button
-          onClick={() => {
-            toast.success("Redirigiendo...");
-            setTimeout(() => navigate(mensajes[index].ruta), 1000);
-          }}
-          className={`px-6 py-2 font-bold rounded-full shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 ${mensajes[index].colorBoton}`}
+          onClick={() => onNavigate(bannerActual.ruta)}
+          className="mt-3 bg-white text-slate-900 font-bold py-2 px-6 rounded-full shadow-md hover:scale-105 transition"
         >
-          {mensajes[index].boton}
+          {bannerActual.boton}
         </button>
       </div>
     </div>
