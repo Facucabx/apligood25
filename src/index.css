@@ -5,97 +5,88 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ------------------- Estilos base ------------------- */
-.animate-spin-slow {
-  animation: spin 2s linear infinite;
+:root {
+  --primary-color: #3B82F6;
+  --danger-color: #E53935;
 }
+
 body {
+  margin: 0;
   font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  color: #1f2937; /* text-gray-800 */
-  background-color: #f9fafb; /* bg-gray-50 */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s, color 0.3s;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif;
-  color: #111827; /* text-gray-900 */
+button {
+  @apply font-semibold rounded cursor-pointer transition-all;
 }
 
-/* ------------------ Utilitarias globales ------------------ */
-
-.card {
-  background-color: white;
-  border-radius: 0.75rem; /* rounded-xl */
-  padding: 1.5rem;        /* p-6 */
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* shadow-md */
-  transition: box-shadow 0.3s ease-in-out;
-}
-
-.card:hover {
-  box-shadow: 0 10px 15px rgba(0,0,0,0.15); /* hover:shadow-xl */
+button:hover {
+  transform: scale(1.02);
 }
 
 .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem; /* gap-2 */
-  background-color: #6366f1; /* primary-500 */
-  color: white;
-  font-weight: 600;
-  padding: 0.5rem 1.5rem; /* py-2 px-6 */
-  border-radius: 0.5rem; /* rounded-lg */
-  transition: background-color 0.2s ease-in-out;
+  @apply bg-blue-600 text-white px-6 py-2 border-none hover:bg-blue-700;
 }
 
-.btn-primary:hover {
-  background-color: #4f46e5; /* primary-600 */
+.btn-danger {
+  @apply bg-red-600 text-white px-6 py-2 border-none hover:bg-red-700;
 }
 
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background-color: #f472b6;
-  color: white;
-  font-weight: 500;
-  padding: 0.5rem 1.25rem;
-  border-radius: 0.5rem;
+.menu-usuario {
+  @apply backdrop-blur bg-white/85 text-gray-900 dark:bg-gray-800 dark:text-white shadow-lg rounded-lg p-2 w-48 border border-gray-200 dark:border-gray-700;
 }
 
-.btn-secondary:hover {
-  background-color: #ec4899;
+.perfil-container {
+  @apply bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg max-w-md mx-auto my-12 text-center transition-all;
 }
 
-.section-title {
-  font-size: 1.5rem;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  color: #4338ca; /* primary-700 */
-  margin-bottom: 1rem;
+.avatar {
+  @apply w-28 h-28 rounded-full object-cover border-4 border-blue-600 shadow-lg hover:opacity-80 transition-all mb-4;
 }
 
-.skeleton {
-  border-radius: 0.5rem;
-  background-color: #d1d5db;
-  animation: pulse 2s infinite;
+h1, h2, h3, h4, h5 {
+  @apply font-bold;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+p {
+  @apply text-gray-500 text-sm;
+}
+
+a {
+  @apply text-blue-600 no-underline hover:underline;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 100, 100, 0.6);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer utilities {
+  @keyframes fade-in-keyframes {
+    0% {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
-  50% {
-    opacity: 0.4;
-  }
-}
 
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  .animate-fade-in {
+    animation: fade-in-keyframes 0.3s ease-out forwards;
+  }
 }

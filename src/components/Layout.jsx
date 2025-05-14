@@ -8,7 +8,7 @@ import BottomNav from "./BottomNav";
 import { FaSun, FaMoon, FaUser, FaSignOutAlt } from "react-icons/fa";
 
 export default function Layout() {
-  const { user, nombre, foto } = useContext(AuthContext);
+  const { user, foto } = useContext(AuthContext);
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -34,63 +34,47 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-900 text-white">
-      <header className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
-        <div className="font-bold text-lg cursor-pointer" onClick={() => navigate("/")}>
+    <div className={`${darkMode ? "dark" : ""} min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white`}>
+      <header className="flex items-center justify-between p-4 shadow" style={{ backgroundColor: '#3B82F6', color: 'white' }}>
+        <div onClick={() => navigate("/")} className="text-xl font-bold cursor-pointer">
           Apligood
         </div>
-        {user && (
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setMenuAbierto(!menuAbierto)}
-              className="flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 hover:bg-white/10 transition"
-            >
-              <img
-                src={foto || "https://ui-avatars.com/api/?name=Apligood"}
-                alt="Avatar"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <span className="hidden md:block text-sm">{nombre || "Usuario"}</span>
-            </button>
-            {menuAbierto && (
-              <div className="absolute right-0 mt-2 w-48 bg-neutral-800 rounded-lg shadow-lg overflow-hidden z-50">
-                <button
-                  className="w-full flex items-center gap-2 p-3 hover:bg-neutral-700 transition"
-                  onClick={() => {
-                    setMenuAbierto(false);
-                    navigate("/perfil");
-                  }}
-                >
-                  <FaUser /> Mi cuenta
-                </button>
-                <button
-                  className="w-full flex items-center gap-2 p-3 hover:bg-neutral-700 transition"
-                  onClick={() => {
-                    toggleDarkMode();
-                    setMenuAbierto(false);
-                  }}
-                >
-                  {darkMode ? <FaSun /> : <FaMoon />} Modo {darkMode ? "Claro" : "Oscuro"}
-                </button>
-                <button
-                  className="w-full flex items-center gap-2 p-3 text-red-400 hover:bg-red-700 hover:text-white transition"
-                  onClick={handleLogout}
-                >
-                  <FaSignOutAlt /> Cerrar sesión
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="relative" ref={menuRef}>
+          <img
+            src={foto || "https://via.placeholder.com/40?text=U"}
+            alt="Avatar"
+            className="w-10 h-10 rounded-full cursor-pointer border-2 border-white hover:opacity-80 transition"
+            onClick={() => setMenuAbierto(!menuAbierto)}
+          />
+          {menuAbierto && (
+            <div className="absolute right-0 mt-2 rounded-lg shadow-lg p-2 w-48 z-50 bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 animate-fade-in">
+              <button
+                onClick={() => navigate("/perfil")}
+                className="flex items-center gap-2 p-2 w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
+              >
+                <FaUser /> Perfil
+              </button>
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center gap-2 p-2 w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
+              >
+                {darkMode ? <FaSun /> : <FaMoon />} {darkMode ? "Modo claro" : "Modo oscuro"}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 p-2 w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-red-600 dark:text-red-400 transition"
+              >
+                <FaSignOutAlt /> Cerrar sesión
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4">
+      <main className="pb-16">
         <Outlet />
       </main>
-
-      <footer className="sticky bottom-0 w-full">
-        <BottomNav />
-      </footer>
+      <BottomNav />
     </div>
   );
 }

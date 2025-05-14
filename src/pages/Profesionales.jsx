@@ -23,11 +23,8 @@ export default function Profesionales() {
 
         if (montado) {
           setProfesionales(data);
-
-          const esp = [...new Set(data.map((p) => p.especialidad))];
-          const ciu = [...new Set(data.map((p) => p.ciudad))];
-          setEspecialidades(esp);
-          setCiudades(ciu);
+          setEspecialidades([...new Set(data.map((p) => p.especialidad))]);
+          setCiudades([...new Set(data.map((p) => p.ciudad))]);
         }
       } catch (error) {
         console.error("Error al traer profesionales:", error);
@@ -51,6 +48,7 @@ export default function Profesionales() {
     <div className="container py-6">
       <h1 className="section-title">Buscar profesionales</h1>
 
+      {/* Filtros */}
       <div className="flex flex-col gap-2 mb-6">
         <select
           value={filtroEspecialidad}
@@ -79,9 +77,8 @@ export default function Profesionales() {
         </select>
       </div>
 
-      <h2 className="text-sm text-gray-500 mb-4 font-semibold">Recomendados</h2>
-
-      {Array.isArray(profesionalesFiltrados) && profesionalesFiltrados.length > 0 ? (
+      {/* Resultados */}
+      {profesionalesFiltrados.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {profesionalesFiltrados.map((pro) => (
             <TarjetaProfesional
@@ -100,14 +97,6 @@ export default function Profesionales() {
           No encontramos profesionales con ese filtro 😕
         </div>
       )}
-
-      {/* Botón flotante para agregar */}
-      <a
-        href="/nuevo"
-        className="fixed bottom-20 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
-      >
-        ➕
-      </a>
     </div>
   );
 }

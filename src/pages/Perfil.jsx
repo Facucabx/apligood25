@@ -56,6 +56,7 @@ export default function Perfil() {
         const fotoRef = ref(storage, `avatars/${user.uid}`);
         await uploadBytes(fotoRef, nuevaFoto);
         urlFotoActualizada = await getDownloadURL(fotoRef);
+        toast.success("Foto actualizada.");
       }
 
       await updateDoc(usuarioRef, {
@@ -99,8 +100,12 @@ export default function Perfil() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="bg-gray-800 rounded-xl p-6 shadow-lg w-full max-w-md space-y-6 animate-fade-in">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4 transition-all duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg w-full max-w-md space-y-6 animate-fade-in relative">
+        {/* Saludo personalizado */}
+        <h1 className="text-2xl font-bold text-center">Hola, {nombre || "Usuario"} 👋</h1>
+
+        {/* Avatar */}
         <div className="flex flex-col items-center space-y-2">
           <label htmlFor="foto" className="cursor-pointer relative group">
             <img
@@ -115,14 +120,16 @@ export default function Perfil() {
           <input id="foto" type="file" accept="image/*" onChange={handleCambiarFoto} className="hidden" />
         </div>
 
+        {/* Nombre */}
         <input
           type="text"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Tu nombre"
-          className="px-4 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-center"
+          className="px-4 py-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-center"
         />
 
+        {/* Guardar */}
         <button
           onClick={handleGuardar}
           disabled={cargando}
@@ -133,14 +140,18 @@ export default function Perfil() {
           {cargando && <FaSpinner className="animate-spin" />} Guardar cambios
         </button>
 
-        <div className="border-t border-gray-600 pt-4">
+        {/* Eliminar cuenta */}
+        <div className="border-t border-gray-300 dark:border-gray-600 pt-4">
           <button
             onClick={handleEliminarCuenta}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-2 rounded font-semibold transition-all w-full"
           >
-            <FaTrash /> Eliminar cuenta
+            <FaTrash /> Eliminar cuenta 🗑️
           </button>
         </div>
+
+        {/* Mensaje humanizador */}
+        <p className="text-xs text-gray-500 text-center mt-4">Tu información está segura con nosotros.</p>
       </div>
     </div>
   );

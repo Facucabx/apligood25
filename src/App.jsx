@@ -18,7 +18,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
 
-        {/* Rutas privadas */}
+        {/* Rutas privadas con Layout general */}
         <Route
           path="/"
           element={
