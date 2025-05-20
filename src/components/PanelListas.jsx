@@ -1,7 +1,12 @@
-// PanelListas.jsx
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { toast } from "react-toastify";
 
 export default function PanelListas() {
@@ -9,147 +14,124 @@ export default function PanelListas() {
   const [especialidades, setEspecialidades] = useState([]);
   const [nuevaCiudad, setNuevaCiudad] = useState("");
   const [nuevaEspecialidad, setNuevaEspecialidad] = useState("");
-  const [editando, setEditando] = useState({ id: null, valor: "" });
 
-  const configRef = doc(db, "config", "listas");
+  const fetchData = async () => {
+    const ciudadesSnapshot = await getDocs(collection(db, "ciudades"));
+    const especialidadesSnapshot = await getDocs(collection(db, "especialidades"));
+
+    setCiudades(
+      ciudadesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+    setEspecialidades(
+      especialidadesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+  };
 
   useEffect(() => {
-    const unsub = onSnapshot(configRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setCiudades(docSnap.data().ciudades || []);
-        setEspecialidades(docSnap.data().especialidades || []);
-      }
-    });
-    return () => unsub();
+    fetchData();
   }, []);
 
-  const agregarALista = async (tipo, valor) => {
-    if (!valor.trim()) return toast.warn("No puede estar vacío");
-    const campo = tipo === "ciudad" ? "ciudades" : "especialidades";
-    const listaActual = tipo === "ciudad" ? ciudades : especialidades;
-    if (listaActual.includes(valor)) return toast.warn("Ya existe");
-
-    const nuevaLista = [...listaActual, valor];
-    try {
-      await updateDoc(configRef, { [campo]: nuevaLista });
-      toast.success(`${tipo} agregada`);
-      tipo === "ciudad" ? setNuevaCiudad("") : setNuevaEspecialidad("");
-    } catch (error) {
-      toast.error("Error al agregar");
-    }
+  const agregarCiudad = async () => {
+    if (!nuevaCiudad.trim()) return;
+    await addDoc(collection(db, "ciudades"), { nombre: nuevaCiudad });
+    toast.success("Ciudad agregada");
+    setNuevaCiudad("");
+    fetchData();
   };
 
-  const eliminarDeLista = async (tipo, item) => {
-    const campo = tipo === "ciudad" ? "ciudades" : "especialidades";
-    const listaActual = tipo === "ciudad" ? ciudades : especialidades;
-    const nuevaLista = listaActual.filter((i) => i !== item);
-
-    try {
-      await updateDoc(configRef, { [campo]: nuevaLista });
-      toast.info(`${item} eliminada`);
-    } catch (error) {
-      toast.error("Error al eliminar");
-    }
+  const eliminarCiudad = async (id) => {
+    await deleteDoc(doc(db, "ciudades", id));
+    toast.info("Ciudad eliminada");
+    fetchData();
   };
 
-  const editarElemento = async (tipo, anterior, nuevo) => {
-    const campo = tipo === "ciudad" ? "ciudades" : "especialidades";
-    const listaActual = tipo === "ciudad" ? ciudades : especialidades;
-    const nuevaLista = listaActual.map((i) => (i === anterior ? nuevo : i));
+  const agregarEspecialidad = async () => {
+    if (!nuevaEspecialidad.trim()) return;
+    await addDoc(collection(db, "especialidades"), { nombre: nuevaEspecialidad });
+    toast.success("Especialidad agregada");
+    setNuevaEspecialidad("");
+    fetchData();
+  };
 
-    try {
-      await updateDoc(configRef, { [campo]: nuevaLista });
-      toast.success(`${tipo} actualizada`);
-    } catch (error) {
-      toast.error("Error al editar");
-    }
+  const eliminarEspecialidad = async (id) => {
+    await deleteDoc(doc(db, "especialidades", id));
+    toast.info("Especialidad eliminada");
+    fetchData();
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      {[{
-        label: "Ciudades",
-        tipo: "ciudad",
-        valor: nuevaCiudad,
-        set: setNuevaCiudad,
-        items: ciudades,
-      }, {
-        label: "Especialidades",
-        tipo: "especialidad",
-        valor: nuevaEspecialidad,
-        set: setNuevaEspecialidad,
-        items: especialidades,
-      }].map(({ label, tipo, valor, set, items }) => (
-        <div key={tipo} className="bg-slate-800 p-4 rounded shadow-md">
-          <h2 className="text-xl font-semibold mb-3">{label}</h2>
-          <div className="flex mb-3">
-            <input
-              type="text"
-              placeholder={`Nueva ${tipo}`}
-              value={valor}
-              onChange={(e) => set(e.target.value)}
-              className="flex-1 bg-slate-900 text-white px-3 py-2 rounded-l border border-slate-700"
-            />
-            <button
-              onClick={() => agregarALista(tipo, valor)}
-              className="bg-blue-600 px-4 rounded-r hover:bg-blue-700"
-            >
-              +
-            </button>
-          </div>
-          <ul className="space-y-2">
-            {items.map((item, index) => (
-              <li
-                key={item}
-                className="flex justify-between items-center bg-slate-700 px-3 py-2 rounded"
-              >
-                {editando.id === tipo + index ? (
-                  <>
-                    <input
-                      value={editando.valor}
-                      onChange={(e) =>
-                        setEditando({ ...editando, valor: e.target.value })
-                      }
-                      className="bg-slate-900 text-white px-2 py-1 rounded w-full"
-                    />
-                    <button
-                      onClick={async () => {
-                        if (!editando.valor.trim()) return toast.warn("No puede estar vacío");
-                        if (items.includes(editando.valor.trim())) return toast.warn("Ya existe");
-                        await editarElemento(tipo, item, editando.valor.trim());
-                        setEditando({ id: null, valor: "" });
-                      }}
-                      className="text-green-400 ml-2"
-                    >
-                      ✔
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span>{item}</span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          setEditando({ id: tipo + index, valor: item })
-                        }
-                        className="text-yellow-400 hover:text-yellow-600"
-                      >
-                        🖊
-                      </button>
-                      <button
-                        onClick={() => eliminarDeLista(tipo, item)}
-                        className="text-red-400 hover:text-red-600"
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* 📍 Ciudades */}
+      <div>
+        <h3 className="text-lg font-bold mb-2">📍 Ciudades</h3>
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={nuevaCiudad}
+            onChange={(e) => setNuevaCiudad(e.target.value)}
+            placeholder="Agregar ciudad"
+            className="w-full p-2 rounded bg-slate-800 text-white border border-slate-600"
+          />
+          <button
+            onClick={agregarCiudad}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Agregar
+          </button>
         </div>
-      ))}
+        <ul className="space-y-2">
+          {ciudades.map((c) => (
+            <li
+              key={c.id}
+              className="flex justify-between items-center bg-slate-800 p-2 rounded"
+            >
+              <span>{c.nombre}</span>
+              <button
+                onClick={() => eliminarCiudad(c.id)}
+                className="text-red-400 hover:text-red-600"
+              >
+                Eliminar
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* 🧠 Especialidades */}
+      <div>
+        <h3 className="text-lg font-bold mb-2">🧠 Especialidades</h3>
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={nuevaEspecialidad}
+            onChange={(e) => setNuevaEspecialidad(e.target.value)}
+            placeholder="Agregar especialidad"
+            className="w-full p-2 rounded bg-slate-800 text-white border border-slate-600"
+          />
+          <button
+            onClick={agregarEspecialidad}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Agregar
+          </button>
+        </div>
+        <ul className="space-y-2">
+          {especialidades.map((e) => (
+            <li
+              key={e.id}
+              className="flex justify-between items-center bg-slate-800 p-2 rounded"
+            >
+              <span>{e.nombre}</span>
+              <button
+                onClick={() => eliminarEspecialidad(e.id)}
+                className="text-red-400 hover:text-red-600"
+              >
+                Eliminar
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

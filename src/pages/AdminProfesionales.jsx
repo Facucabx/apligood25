@@ -1,33 +1,78 @@
-// AdminProfesionales.jsx
-import { useState } from "react";
-import ListaProfesionales from "../components/ListaProfesionales";
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import Topbar from "../components/Topbar";
+import BottomNav from "../components/BottomNav";
 import PanelListas from "../components/PanelListas";
-import DashboardAdmin from "../components/DashboardAdmin";
+import ListaProfesionales from "../components/ListaProfesionales";
+import AgregarProfesional from "../components/AgregarProfesional";
 
 export default function AdminProfesionales() {
-  const [tab, setTab] = useState("profesionales");
+  const [profesionales, setProfesionales] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfesionales = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "profesionales"));
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProfesionales(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error al obtener profesionales:", error);
+      }
+    };
+
+    fetchProfesionales();
+  }, []);
+
+  const total = profesionales.length;
+  const ciudades = {};
+  const especialidades = {};
+
+  profesionales.forEach((prof) => {
+    ciudades[prof.ciudad] = (ciudades[prof.ciudad] || 0) + 1;
+    especialidades[prof.especialidad] = (especialidades[prof.especialidad] || 0) + 1;
+  });
 
   return (
-    <div className="p-4 max-w-6xl mx-auto text-white min-h-screen bg-[#0f172a]">
-      <h1 className="text-3xl font-bold mb-6 text-center">Panel de Administración</h1>
+    <>
+      <Topbar />
+      <main className="min-h-screen bg-slate-900 text-white px-4 pt-4 pb-24">
+        <h1 className="text-center text-2xl font-bold mb-2">Resumen</h1>
+        <p className="text-center mb-6">
+          Total de profesionales: <strong>{total}</strong>
+        </p>
 
-      <div className="flex justify-center gap-4 mb-6">
-        {["profesionales", "listas", "dashboard"].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-full font-semibold transition-all duration-300 ${
-              tab === t ? "bg-blue-600 shadow-lg scale-105" : "bg-slate-700 hover:bg-slate-600"
-            }`}
-          >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-          </button>
-        ))}
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h2 className="font-semibold text-lg mb-2">📍 Por ciudad</h2>
+            {Object.entries(ciudades).map(([ciudad, count]) => (
+              <p key={ciudad}>{ciudad}: <strong>{count}</strong></p>
+            ))}
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg mb-2">🧠 Por especialidad</h2>
+            {Object.entries(especialidades).map(([esp, count]) => (
+              <p key={esp}>{esp}: <strong>{count}</strong></p>
+            ))}
+          </div>
+        </div>
 
-      {tab === "profesionales" && <ListaProfesionales />}
-      {tab === "listas" && <PanelListas />}
-      {tab === "dashboard" && <DashboardAdmin />}
-    </div>
+        <section className="space-y-10">
+          <PanelListas />
+          <section className="space-y-10">
+            <PanelListas />
+            <AgregarProfesional />
+            <ListaProfesionales />
+          </section>
+          <ListaProfesionales />
+        </section>
+      </main>
+      <BottomNav />
+    </>
   );
 }

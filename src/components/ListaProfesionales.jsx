@@ -1,131 +1,59 @@
-// ListaProfesionales.jsx
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import {
   collection,
+  getDocs,
   deleteDoc,
   doc,
-  onSnapshot,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { Link } from "react-router-dom";
 
 export default function ListaProfesionales() {
   const [profesionales, setProfesionales] = useState([]);
-  const [ciudades, setCiudades] = useState([]);
-  const [especialidades, setEspecialidades] = useState([]);
-  const [filtroCiudad, setFiltroCiudad] = useState("Todas");
-  const [filtroEspecialidad, setFiltroEspecialidad] = useState("Todas");
+
+  const fetchProfesionales = async () => {
+    const snapshot = await getDocs(collection(db, "profesionales"));
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setProfesionales(data);
+  };
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "profesionales"), (snapshot) => {
-      const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setProfesionales(lista);
-    });
-
-    const configRef = doc(db, "config", "listas");
-    const unsubConfig = onSnapshot(configRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setCiudades(docSnap.data().ciudades || []);
-        setEspecialidades(docSnap.data().especialidades || []);
-      }
-    });
-
-    return () => {
-      unsub();
-      unsubConfig();
-    };
+    fetchProfesionales();
   }, []);
 
   const eliminarProfesional = async (id) => {
-    if (confirm("¿Eliminar profesional?")) {
-      await deleteDoc(doc(db, "profesionales", id));
-      toast.info("Profesional eliminado");
-    }
+    await deleteDoc(doc(db, "profesionales", id));
+    toast.info("Profesional eliminado");
+    fetchProfesionales();
   };
 
-  const filtrados = profesionales.filter((p) => {
-    const coincideCiudad = filtroCiudad === "Todas" || p.ciudad === filtroCiudad;
-    const coincideEspecialidad =
-      filtroEspecialidad === "Todas" || p.especialidad === filtroEspecialidad;
-    return coincideCiudad && coincideEspecialidad;
-  });
-
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
-        <div className="flex gap-2">
-          <select
-            value={filtroCiudad}
-            onChange={(e) => setFiltroCiudad(e.target.value)}
-            className="bg-slate-800 px-3 py-2 rounded"
-          >
-            <option value="Todas">📍 Todas las ciudades</option>
-            {ciudades.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-
-          <select
-            value={filtroEspecialidad}
-            onChange={(e) => setFiltroEspecialidad(e.target.value)}
-            className="bg-slate-800 px-3 py-2 rounded"
-          >
-            <option value="Todas">🧠 Todas las especialidades</option>
-            {especialidades.map((e) => (
-              <option key={e}>{e}</option>
-            ))}
-          </select>
-        </div>
-
-        <Link
-          to="/admin/nuevo"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-        >
-          + Agregar profesional
-        </Link>
-      </div>
-
-      {filtrados.length === 0 ? (
-        <p className="text-center text-gray-400 mt-6">
-          No se encontraron profesionales.
-        </p>
-      ) : (
-        filtrados.map((p) => (
-          <div
+    <div className="mt-12">
+      <h3 className="text-lg font-bold mb-4">👥 Lista de Profesionales</h3>
+      <ul className="space-y-4">
+        {profesionales.map((p) => (
+          <li
             key={p.id}
-            className="bg-slate-800 rounded p-4 mb-2 flex items-center justify-between"
+            className="bg-slate-800 p-4 rounded shadow-md flex flex-col md:flex-row md:justify-between md:items-center"
           >
-            <div className="flex items-center gap-4">
-              <img
-                src={p.avatar || "https://via.placeholder.com/50"}
-                alt={p.nombre}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <p className="font-semibold text-sky-400">{p.nombre}</p>
-                <p className="text-sm text-gray-300">
-                  {p.especialidad} – {p.ciudad}
-                </p>
-              </div>
+            <div>
+              <p className="font-semibold">{p.nombre}</p>
+              <p className="text-sm text-slate-300">
+                {p.especialidad} - {p.ciudad}
+              </p>
             </div>
-            <div className="flex gap-2">
-              <Link
-                to={`/admin/editar/${p.id}`}
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-1 px-3 rounded"
-              >
-                Editar
-              </Link>
-              <button
-                onClick={() => eliminarProfesional(p.id)}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))
-      )}
+            <button
+              onClick={() => eliminarProfesional(p.id)}
+              className="text-red-400 hover:text-red-600 mt-2 md:mt-0"
+            >
+              Eliminar
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
