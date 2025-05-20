@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import AdminProfesionales from "./pages/AdminProfesionales";
 import Profesionales from "./pages/Profesionales";
+import PerfilProfesional from "./pages/PerfilProfesional";
 import Objetos from "./pages/Objetos";
 import Reservas from "./pages/Reservas";
 import Login from "./pages/Login";
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="perfil" element={<Perfil />} />
           <Route path="admin" element={<AdminProfesionales />} />
           <Route path="profesionales" element={<Profesionales />} />
+          <Route path="profesionales/:id" element={<PerfilProfesional />} />
           <Route path="objetos" element={<Objetos />} />
           <Route path="reservas" element={<Reservas />} />
         </Route>

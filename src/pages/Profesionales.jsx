@@ -45,15 +45,17 @@ export default function Profesionales() {
   });
 
   return (
-    <div className="container py-6">
-      <h1 className="section-title">Buscar profesionales</h1>
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white tracking-tight">
+        Profesionales disponibles
+      </h1>
 
       {/* Filtros */}
-      <div className="flex flex-col gap-2 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
         <select
           value={filtroEspecialidad}
           onChange={(e) => setFiltroEspecialidad(e.target.value)}
-          className="px-3 py-2 border rounded text-black"
+          className="bg-white dark:bg-slate-700 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         >
           <option value="">Todas las especialidades</option>
           {especialidades.map((esp, i) => (
@@ -66,7 +68,7 @@ export default function Profesionales() {
         <select
           value={filtroCiudad}
           onChange={(e) => setFiltroCiudad(e.target.value)}
-          className="px-3 py-2 border rounded text-black"
+          className="bg-white dark:bg-slate-700 text-gray-900 dark:text-white border border-gray-300 dark:border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         >
           <option value="">Todas las ciudades</option>
           {ciudades.map((ciu, i) => (
@@ -79,7 +81,7 @@ export default function Profesionales() {
 
       {/* Resultados */}
       {profesionalesFiltrados.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {profesionalesFiltrados.map((pro) => (
             <TarjetaProfesional
               key={pro.id}
@@ -89,11 +91,12 @@ export default function Profesionales() {
               ciudad={pro.ciudad}
               rating={pro.rating}
               imagen={pro.avatar || "/images/avatar-default.webp"}
+              disponibilidad={pro.disponibilidad}
             />
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500 italic">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400 italic">
           No encontramos profesionales con ese filtro 😕
         </div>
       )}

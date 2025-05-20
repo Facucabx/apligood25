@@ -42,10 +42,37 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-50 px-4">
-      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm text-center">
+    <div
+      className="min-h-screen w-screen flex items-center justify-center px-4 bg-center bg-no-repeat transition-all duration-500"
+      style={{
+        backgroundImage: `url('/images/fondo-login-desktop.webp')`,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundColor: "#0f172a",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      <style>
+        {`
+          @media (max-width: 768px) {
+            div[style] {
+              background-image: url('/images/fondo-login-tablet.webp');
+              background-size: cover;
+            }
+          }
+          @media (max-width: 480px) {
+            div[style] {
+              background-image: url('/images/fondo-login-mobile.webp');
+              background-size: cover;
+            }
+          }
+        `}
+      </style>
+
+      <div className="bg-white/90 dark:bg-black/70 backdrop-blur-md rounded-2xl shadow-lg p-6 w-full max-w-sm text-center animate-fadeIn">
         <h1 className="text-3xl font-bold text-blue-600 mb-2">Apligood</h1>
-        <h2 className="text-lg font-semibold">¡Bienvenidos!</h2>
+        <h2 className="text-sm font-medium text-gray-600 mb-1">Lo que buscás, donde vivís.</h2>
         <p className="text-sm text-gray-500 mb-4">Ingresa a tu cuenta</p>
 
         {error && (
@@ -57,6 +84,7 @@ export default function Login() {
             type="email"
             name="email"
             placeholder="Correo electrónico"
+            aria-label="Correo electrónico"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
             disabled={loading}
@@ -65,6 +93,7 @@ export default function Login() {
             type="password"
             name="password"
             placeholder="Contraseña"
+            aria-label="Contraseña"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
             disabled={loading}
@@ -87,12 +116,12 @@ export default function Login() {
           <img
             src="https://img.icons8.com/color/48/google-logo.png"
             alt="Google"
-            className="w-6 h-6 cursor-pointer"
+            className="w-6 h-6 cursor-pointer hover:scale-110 transition"
           />
           <img
             src="https://img.icons8.com/color/48/facebook-new.png"
             alt="Facebook"
-            className="w-6 h-6 cursor-pointer"
+            className="w-6 h-6 cursor-pointer hover:scale-110 transition"
           />
         </div>
 
