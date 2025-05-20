@@ -1,313 +1,285 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  updateDoc,
+  onSnapshot,
+} from "firebase/firestore";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 export default function AdminProfesionales() {
+  const [tab, setTab] = useState("profesionales");
   const [profesionales, setProfesionales] = useState([]);
-  const [filtrados, setFiltrados] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [subiendo, setSubiendo] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre: "",
-    especialidad: "",
-    ciudad: "",
-    disponible: "",
-    avatar: "",
-    rating: 0,
-  });
-  const [editId, setEditId] = useState(null);
-  const [search, setSearch] = useState("");
+  const [ciudades, setCiudades] = useState([]);
+  const [especialidades, setEspecialidades] = useState([]);
+  const [nuevaCiudad, setNuevaCiudad] = useState("");
+  const [nuevaEspecialidad, setNuevaEspecialidad] = useState("");
   const [filtroCiudad, setFiltroCiudad] = useState("Todas");
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("Todas");
 
-  const profesionalesRef = collection(db, "profesionales");
-
-  const cargarProfesionales = async () => {
-    const snapshot = await getDocs(profesionalesRef);
-    const datos = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setProfesionales(datos);
-    setFiltrados(datos);
-  };
+  const configRef = doc(db, "config", "listas");
 
   useEffect(() => {
-    cargarProfesionales();
+    const unsub = onSnapshot(collection(db, "profesionales"), (snapshot) => {
+      const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setProfesionales(lista);
+    });
+
+    const unsubConfig = onSnapshot(configRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setCiudades(docSnap.data().ciudades || []);
+        setEspecialidades(docSnap.data().especialidades || []);
+      }
+    });
+
+    return () => {
+      unsub();
+      unsubConfig();
+    };
   }, []);
 
-  useEffect(() => {
-    let resultado = profesionales;
-
-    if (search.trim() !== "") {
-      resultado = resultado.filter((p) => p.nombre.toLowerCase().includes(search.toLowerCase()));
-    }
-    if (filtroCiudad !== "Todas") {
-      resultado = resultado.filter((p) => p.ciudad === filtroCiudad);
-    }
-    if (filtroEspecialidad !== "Todas") {
-      resultado = resultado.filter((p) => p.especialidad === filtroEspecialidad);
-    }
-
-    setFiltrados(resultado);
-  }, [search, filtroCiudad, filtroEspecialidad, profesionales]);
-
-  const abrirModal = (prof = null) => {
-    if (prof) {
-      setFormData(prof);
-      setEditId(prof.id);
-    } else {
-      setFormData({
-        nombre: "",
-        especialidad: "",
-        ciudad: "",
-        disponible: "",
-        avatar: "",
-        rating: 0,
-      });
-      setEditId(null);
-    }
-    setModalOpen(true);
-  };
-
-  const guardarProfesional = async () => {
-    const { nombre, especialidad, ciudad, disponible, avatar } = formData;
-
-    if (!nombre || !especialidad || !ciudad || !disponible || !avatar) {
-      toast.error("Todos los campos son obligatorios");
-      return;
-    }
-
-    try {
-      if (editId) {
-        const ref = doc(db, "profesionales", editId);
-        await updateDoc(ref, formData);
-        toast.success("Profesional actualizado");
-      } else {
-        await addDoc(profesionalesRef, formData);
-        toast.success("Profesional agregado");
-      }
-      setModalOpen(false);
-      cargarProfesionales();
-    } catch (error) {
-      console.error(error);
-      toast.error("Ocurrió un error al guardar");
-    }
-  };
-
   const eliminarProfesional = async (id) => {
-    if (confirm("¿Estás seguro que querés eliminar este profesional?")) {
+    if (confirm("¿Eliminar profesional?")) {
       await deleteDoc(doc(db, "profesionales", id));
       toast.info("Profesional eliminado");
-      cargarProfesionales();
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "rating" ? Number(value) : value,
-    }));
-  };
-
-  const subirImagen = async (file) => {
-    setSubiendo(true);
-    const storage = getStorage();
-    const ruta = `avatars/${Date.now()}-${file.name}`;
-    const storageRef = ref(storage, ruta);
+  const agregarALista = async (tipo, valor) => {
+    if (!valor.trim()) return;
+    const campo = tipo === "ciudad" ? "ciudades" : "especialidades";
+    const nuevaLista = tipo === "ciudad" ? [...ciudades, valor] : [...especialidades, valor];
 
     try {
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      setFormData((prev) => ({ ...prev, avatar: url }));
-      toast.success("✅ Imagen subida");
+      await updateDoc(configRef, { [campo]: nuevaLista });
+      toast.success(`${tipo} agregada`);
+      tipo === "ciudad" ? setNuevaCiudad("") : setNuevaEspecialidad("");
     } catch (error) {
-      console.error(error);
-      toast.error("❌ Error al subir imagen");
-    } finally {
-      setSubiendo(false);
+      toast.error("Error al agregar");
     }
   };
 
-  const ciudades = [...new Set(profesionales.map((p) => p.ciudad))];
-  const especialidades = [...new Set(profesionales.map((p) => p.especialidad))];
+  const eliminarDeLista = async (tipo, item) => {
+    const campo = tipo === "ciudad" ? "ciudades" : "especialidades";
+    const listaActual = tipo === "ciudad" ? ciudades : especialidades;
+    const nuevaLista = listaActual.filter((i) => i !== item);
+
+    try {
+      await updateDoc(configRef, { [campo]: nuevaLista });
+      toast.info(`${item} eliminada`);
+    } catch (error) {
+      toast.error("Error al eliminar");
+    }
+  };
+
+  const filtrados = profesionales.filter((p) => {
+    const coincideCiudad = filtroCiudad === "Todas" || p.ciudad === filtroCiudad;
+    const coincideEspecialidad = filtroEspecialidad === "Todas" || p.especialidad === filtroEspecialidad;
+    return coincideCiudad && coincideEspecialidad;
+  });
+
+  const contarPor = (lista, campo) =>
+    lista.reduce((acc, p) => {
+      acc[p[campo]] = (acc[p[campo]] || 0) + 1;
+      return acc;
+    }, {});
 
   return (
-    <div className="p-6 max-w-3xl mx-auto text-white">
-      <h2 className="text-2xl font-bold mb-4">Panel de Administración</h2>
+    <div className="p-4 max-w-5xl mx-auto text-white">
+      <h1 className="text-3xl font-bold mb-6 text-center">Panel de Administración</h1>
 
-      {/* Filtros */}
-      <div className="bg-gray-800 p-4 rounded-md mb-6">
-        <input
-          type="text"
-          placeholder="🔍 Buscar por nombre..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="p-2 rounded mr-2 text-black"
-        />
-
-        <select
-          value={filtroCiudad}
-          onChange={(e) => setFiltroCiudad(e.target.value)}
-          className="p-2 rounded mr-2 text-black"
-        >
-          <option value="Todas">📍 Ciudad: Todas</option>
-          {ciudades.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={filtroEspecialidad}
-          onChange={(e) => setFiltroEspecialidad(e.target.value)}
-          className="p-2 rounded text-black"
-        >
-          <option value="Todas">🛠️ Especialidad: Todas</option>
-          {especialidades.map((e) => (
-            <option key={e} value={e}>
-              {e}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <button
-        onClick={() => abrirModal()}
-        className="mb-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        + Agregar nuevo profesional
-      </button>
-
-      {/* Lista */}
-      <div className="space-y-4">
-        {filtrados.map((p) => (
-          <div key={p.id} className="flex items-center p-4 rounded bg-gray-800 shadow gap-4">
-            <img
-              src={p.avatar || "https://via.placeholder.com/64?text=👤"}
-              alt={p.nombre}
-              className="w-16 h-16 rounded-full object-cover border border-white"
-            />
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-blue-400">{p.nombre}</h3>
-              <p>
-                {p.especialidad} – {p.ciudad}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => abrirModal(p)}
-                className="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded text-black"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => eliminarProfesional(p.id)}
-                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
+      <div className="flex justify-center gap-4 mb-6">
+        {["profesionales", "listas", "dashboard"].map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 rounded-full font-semibold ${
+              tab === t ? "bg-blue-600 shadow-lg" : "bg-slate-700"
+            }`}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
         ))}
       </div>
 
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white text-black p-6 rounded shadow-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">{editId ? "Editar" : "Nuevo"} Profesional</h3>
-            <div className="space-y-2">
-              {["nombre", "especialidad", "ciudad"].map((f) => (
-                <input
-                  key={f}
-                  name={f}
-                  value={formData[f]}
-                  onChange={handleChange}
-                  placeholder={f}
-                  className="w-full p-2 border rounded"
-                />
-              ))}
-
+      {tab === "profesionales" && (
+        <div>
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
+            <div className="flex gap-2">
               <select
-                name="disponible"
-                value={formData.disponible}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
+                value={filtroCiudad}
+                onChange={(e) => setFiltroCiudad(e.target.value)}
+                className="bg-slate-800 px-3 py-2 rounded"
               >
-                <option value="">⏰ Disponibilidad</option>
-                <option value="24hs">24hs</option>
-                <option value="Horario comercial">Horario comercial</option>
-                <option value="Fines de semana">Fines de semana</option>
+                <option value="Todas">📍 Todas las ciudades</option>
+                {ciudades.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
               </select>
 
-              <input
-                type="number"
-                name="rating"
-                value={formData.rating}
-                onChange={handleChange}
-                min="0"
-                max="5"
-                step="0.1"
-                className="w-full p-2 border rounded"
-                placeholder="rating"
-              />
-
-              {/* Imagen: ver o cambiar */}
-              {formData.avatar && (
-                <div className="text-center space-y-2">
-                  <p className="text-sm text-gray-600">Imagen actual</p>
-                  <img
-                    src={formData.avatar}
-                    alt="preview"
-                    className="w-20 h-20 object-cover rounded-full border mx-auto"
-                  />
-                  <label className="block mt-2 text-sm font-medium">
-                    Cambiar imagen:
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) subirImagen(file);
-                      }}
-                      className="w-full mt-1 p-1 border rounded"
-                    />
-                  </label>
-                </div>
-              )}
-
-              {!formData.avatar && (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) subirImagen(file);
-                  }}
-                  className="w-full p-2 border rounded"
-                />
-              )}
-
-              {subiendo && (
-                <p className="text-sm text-gray-500 text-center mt-2">Subiendo imagen...</p>
-              )}
+              <select
+                value={filtroEspecialidad}
+                onChange={(e) => setFiltroEspecialidad(e.target.value)}
+                className="bg-slate-800 px-3 py-2 rounded"
+              >
+                <option value="Todas">🧠 Todas las especialidades</option>
+                {especialidades.map((e) => (
+                  <option key={e}>{e}</option>
+                ))}
+              </select>
             </div>
 
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setModalOpen(false)} className="px-4 py-2 border rounded">
-                Cancelar
-              </button>
-              <button
-                onClick={guardarProfesional}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            <Link
+              to="/admin/nuevo"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+            >
+              + Agregar profesional
+            </Link>
+          </div>
+
+          {filtrados.length === 0 ? (
+            <p className="text-center text-gray-400 mt-6">No se encontraron profesionales.</p>
+          ) : (
+            filtrados.map((p) => (
+              <div
+                key={p.id}
+                className="bg-slate-800 rounded p-4 mb-2 flex items-center justify-between"
               >
-                Guardar
+                <div className="flex items-center gap-4">
+                  <img
+                    src={p.avatar || "https://via.placeholder.com/50"}
+                    alt={p.nombre}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold text-sky-400">{p.nombre}</p>
+                    <p className="text-sm text-gray-300">
+                      {p.especialidad} – {p.ciudad}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    to={`/admin/editar/${p.id}`}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-1 px-3 rounded"
+                  >
+                    Editar
+                  </Link>
+                  <button
+                    onClick={() => eliminarProfesional(p.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === "listas" && (
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-slate-800 p-4 rounded shadow-md">
+            <h2 className="text-xl font-semibold mb-3">Ciudades</h2>
+            <div className="flex mb-3">
+              <input
+                type="text"
+                placeholder="Nueva ciudad"
+                value={nuevaCiudad}
+                onChange={(e) => setNuevaCiudad(e.target.value)}
+                className="flex-1 bg-slate-900 text-white px-3 py-2 rounded-l border border-slate-700"
+              />
+              <button
+                onClick={() => agregarALista("ciudad", nuevaCiudad)}
+                className="bg-blue-600 px-4 rounded-r hover:bg-blue-700"
+              >
+                +
               </button>
+            </div>
+            <ul className="space-y-2">
+              {ciudades.map((item) => (
+                <li
+                  key={item}
+                  className="flex justify-between items-center bg-slate-700 px-3 py-2 rounded"
+                >
+                  <span>{item}</span>
+                  <button
+                    onClick={() => eliminarDeLista("ciudad", item)}
+                    className="text-red-400 hover:text-red-600"
+                  >
+                    🗑
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="bg-slate-800 p-4 rounded shadow-md">
+            <h2 className="text-xl font-semibold mb-3">Especialidades</h2>
+            <div className="flex mb-3">
+              <input
+                type="text"
+                placeholder="Nueva especialidad"
+                value={nuevaEspecialidad}
+                onChange={(e) => setNuevaEspecialidad(e.target.value)}
+                className="flex-1 bg-slate-900 text-white px-3 py-2 rounded-l border border-slate-700"
+              />
+              <button
+                onClick={() => agregarALista("especialidad", nuevaEspecialidad)}
+                className="bg-blue-600 px-4 rounded-r hover:bg-blue-700"
+              >
+                +
+              </button>
+            </div>
+            <ul className="space-y-2">
+              {especialidades.map((item) => (
+                <li
+                  key={item}
+                  className="flex justify-between items-center bg-slate-700 px-3 py-2 rounded"
+                >
+                  <span>{item}</span>
+                  <button
+                    onClick={() => eliminarDeLista("especialidad", item)}
+                    className="text-red-400 hover:text-red-600"
+                  >
+                    🗑
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {tab === "dashboard" && (
+        <div className="bg-slate-800 p-6 rounded shadow-md text-center space-y-4">
+          <h2 className="text-2xl font-bold mb-4">Resumen</h2>
+          <p>Total de profesionales: <strong>{profesionales.length}</strong></p>
+
+          <div className="grid sm:grid-cols-2 gap-6 text-left">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">📍 Por ciudad</h3>
+              <ul className="text-sm space-y-1">
+                {Object.entries(contarPor(profesionales, "ciudad")).map(([ciudad, count]) => (
+                  <li key={ciudad}>
+                    {ciudad}: <strong>{count}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">🧠 Por especialidad</h3>
+              <ul className="text-sm space-y-1">
+                {Object.entries(contarPor(profesionales, "especialidad")).map(([esp, count]) => (
+                  <li key={esp}>
+                    {esp}: <strong>{count}</strong>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

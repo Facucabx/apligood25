@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { onAuthStateChanged, updateProfile } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -9,8 +9,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [nombre, setNombre] = useState("");
   const [foto, setFoto] = useState("");
+  const [loading, setLoading] = useState(true); // ⬅️ Nuevo: loading
 
-  // Cargar datos de usuario
   const cargarDatosUsuario = async (userFirebase) => {
     if (!userFirebase) return;
     try {
@@ -31,14 +31,17 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (userFirebase) => {
+    const unsubscribe = onAuthStateChanged(auth, async (userFirebase) => {
       setUser(userFirebase);
-      cargarDatosUsuario(userFirebase);
+      if (userFirebase) {
+        await cargarDatosUsuario(userFirebase);
+      }
+      setLoading(false); // ⬅️ Listo: termina la carga
     });
+
     return () => unsubscribe();
   }, []);
 
-  // Refrescar datos manualmente si lo necesitas desde otras partes
   const refrescarUsuario = async () => {
     if (auth.currentUser) {
       await auth.currentUser.reload();
@@ -56,6 +59,7 @@ export function AuthProvider({ children }) {
         setNombre,
         setFoto,
         refrescarUsuario,
+        loading, // ⬅️ Exportamos loading
       }}
     >
       {children}
