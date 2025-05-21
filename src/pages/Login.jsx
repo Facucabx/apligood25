@@ -72,7 +72,7 @@ export default function Login() {
 
       <div className="bg-white/90 dark:bg-black/70 backdrop-blur-md rounded-2xl shadow-lg p-6 w-full max-w-sm text-center animate-fadeIn">
         <h1 className="text-3xl font-bold text-blue-600 mb-2">Apligood</h1>
-        <h2 className="text-sm font-medium text-gray-600 mb-1">Lo que buscás, donde vivís.</h2>
+        <h2 className="text-sm font-medium text-gray-600 mb-1">Conectando soluciones en tu ciudad...</h2>
         <p className="text-sm text-gray-500 mb-4">Ingresa a tu cuenta</p>
 
         {error && (
@@ -134,7 +134,7 @@ export default function Login() {
         </div>
 
         <div className="text-sm text-blue-600 space-y-1">
-          <Link to="/register" className="block hover:underline">
+          <Link to="/registro" className="block hover:underline">
             Crear cuenta
           </Link>
           <Link to="#" className="block hover:underline text-gray-500">

@@ -1,7 +1,8 @@
-
 import { Routes, Route } from "react-router-dom";
 import RutaPrivada from "./components/RutaPrivada";
 import Layout from "./components/Layout";
+import { useState, useEffect } from "react";
+import SplashScreen from "./components/SplashScreen";
 
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
@@ -10,11 +11,22 @@ import Profesionales from "./pages/Profesionales";
 import Perfil from "./pages/Perfil";
 import PerfilProfesional from "./pages/PerfilProfesional";
 import AdminProfesionales from "./pages/AdminProfesionales";
-import NuevoProfesional from "./pages/NuevoProfesional"; // ✅ Importación agregada
+import NuevoProfesional from "./pages/NuevoProfesional";
 import Reservas from "./pages/Reservas";
 import Objetos from "./pages/Objetos";
 
 export default function App() {
+  const [mostrandoSplash, setMostrandoSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMostrandoSplash(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (mostrandoSplash) {
+    return <SplashScreen />;
+  }
+
   return (
     <Routes>
       {/* 🌐 Rutas públicas */}
@@ -39,7 +51,7 @@ export default function App() {
 
         {/* 🛠️ Admin */}
         <Route path="admin" element={<AdminProfesionales />} />
-        <Route path="admin/nuevo" element={<NuevoProfesional />} /> {/* ✅ Ruta agregada */}
+        <Route path="admin/nuevo" element={<NuevoProfesional />} />
       </Route>
     </Routes>
   );

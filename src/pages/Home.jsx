@@ -7,23 +7,23 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-screen pb-20 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white">
-      <main className="flex-1 w-full max-w-4xl mx-auto pt-6 px-4">
-        {/* Saludo adaptativo modo PRO */}
-        <h1 className="text-slate-900 dark:text-white text-2xl md:text-3xl font-bold text-center">
+    <div className="flex flex-col min-h-screen pb-24 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        {/* 👋 Saludo adaptativo */}
+        <h1 className="text-slate-900 dark:text-white text-xl sm:text-2xl md:text-3xl font-bold text-center leading-tight tracking-tight">
           Buen día, Facu 👋
         </h1>
-        <p className="text-slate-700 dark:text-slate-300 text-sm text-center mt-1">
+        <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base text-center mt-1 mb-4">
           ¿Qué te gustaría hacer hoy para mejorar tu comunidad?
         </p>
 
-        {/* Banner dinámico */}
-        <div className="mt-8">
+        {/* 🎞️ Banner dinámico */}
+        <div className="mt-4 sm:mt-6">
           <BannerDinamico />
         </div>
 
-        {/* Acciones rápidas */}
-        <div className="mt-10 space-y-4">
+        {/* ⚡ Acciones rápidas */}
+        <div className="mt-8 sm:mt-10 flex flex-col gap-4">
           <BotonColorido
             bgColor="bg-gradient-to-r from-blue-500 to-blue-700"
             icono={<FaUserTie />}
