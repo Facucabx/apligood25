@@ -34,11 +34,22 @@ export default function Layout() {
     return () => document.removeEventListener("mousedown", manejarClickFuera);
   }, []);
 
+  // ⚙️ Sincronizar modo oscuro con <html>
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   // Detectar si ocultar BottomNav (según la ruta actual)
-  const ocultarBottomNav = location.pathname.startsWith("/admin/editar") || location.pathname.startsWith("/admin/nuevo");
+  const ocultarBottomNav =
+    location.pathname.startsWith("/admin/editar") ||
+    location.pathname.startsWith("/admin/nuevo");
 
   return (
-    <div className={`flex flex-col min-h-screen ${darkMode ? "dark" : ""}`}>
+    <div className="flex flex-col min-h-screen">
       <header className="bg-primary shadow-md text-white px-4 py-3 flex justify-between items-center">
         <div className="text-lg font-bold">Apligood</div>
         <div className="relative">
