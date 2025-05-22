@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { db, storage } from "../firebase";
+import { db, storage, auth } from "../firebase";
 import {
   collection,
   getDocs,
@@ -130,6 +130,7 @@ export default function AdminProfesionales() {
     setAvatarPreview(p.avatar);
     setEditando(p);
   };
+
   const agregarItemLista = async (tipo) => {
     const valor = tipo === "especialidad" ? nuevaEspecialidad : nuevaCiudad;
     if (!valor.trim()) return;
@@ -166,9 +167,24 @@ export default function AdminProfesionales() {
     toast.success("Usuario eliminado");
   };
 
-  const clasesFondo = darkMode ? "bg-backgroundDark text-white" : "bg-white text-black";
-  const clasesInput = darkMode ? "bg-backgroundLight text-black" : "bg-gray-100 text-black";
+  const cambiarRol = async (usuario) => {
+    if (usuario.uid === auth.currentUser.uid) {
+      toast.error("No podés modificar tu propio rol");
+      return;
+    }
 
+    try {
+      const nuevoValor = !usuario.isAdmin;
+      await updateDoc(doc(db, "usuarios", usuario.id), { isAdmin: nuevoValor });
+      toast.success(`Rol actualizado: ahora es ${nuevoValor ? "admin" : "usuario"}`);
+      obtenerUsuarios();
+    } catch (error) {
+      console.error("Error al cambiar rol:", error);
+      toast.error("Error al cambiar el rol del usuario");
+    }
+  };
+
+  const clasesFondo = darkMode ? "bg-backgroundDark text-white" : "bg-white text-black";
   const usuariosFiltrados = usuarios.filter((u) =>
     u.email?.toLowerCase().includes(filtroEmail.toLowerCase())
   );
@@ -180,15 +196,18 @@ export default function AdminProfesionales() {
           {["resumen", "profesionales", "listas", "usuarios"].map((t) => (
             <button
               key={t}
-              className={`px-4 py-2 rounded-full font-semibold shadow-sm transition-all duration-200 ${
-                tab === t ? "bg-primary text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
+              className={`px-4 py-2 rounded-full font-semibold shadow-sm transition-all duration-200 ${tab === t
+                  ? "bg-primary text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
               onClick={() => setTab(t)}
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
+
+        {/* TAB RESUMEN */}
         {tab === "resumen" && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold tracking-tight">¡Bienvenido a tu Panel, Admin!</h2>
@@ -208,10 +227,12 @@ export default function AdminProfesionales() {
               </div>
               <div className="bg-slate-800/70 p-4 rounded-xl shadow-md text-center">
                 <p className="text-sm text-gray-400">Rating Promedio</p>
-                <p className="text-2xl font-bold">{(
-                  profesionales.reduce((acc, p) => acc + Number(p.rating || 0), 0) /
-                  (profesionales.length || 1)
-                ).toFixed(1)}</p>
+                <p className="text-2xl font-bold">
+                  {(
+                    profesionales.reduce((acc, p) => acc + Number(p.rating || 0), 0) /
+                    (profesionales.length || 1)
+                  ).toFixed(1)}
+                </p>
               </div>
             </div>
             <div className="mt-6 bg-slate-700/60 p-6 rounded-xl">
@@ -225,7 +246,7 @@ export default function AdminProfesionales() {
             </div>
           </div>
         )}
-
+        {/* TAB PROFESIONALES */}
         {tab === "profesionales" && (
           <>
             <h2 className="text-2xl font-bold mb-4">
@@ -339,10 +360,12 @@ export default function AdminProfesionales() {
             </div>
           </>
         )}
+
+        {/* TAB LISTAS */}
         {tab === "listas" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[{ tipo: "especialidad", data: especialidades, nuevo: nuevaEspecialidad, setNuevo: setNuevaEspecialidad },
-              { tipo: "ciudad", data: ciudades, nuevo: nuevaCiudad, setNuevo: setNuevaCiudad }].map(({ tipo, data, nuevo, setNuevo }) => (
+            { tipo: "ciudad", data: ciudades, nuevo: nuevaCiudad, setNuevo: setNuevaCiudad }].map(({ tipo, data, nuevo, setNuevo }) => (
               <div key={tipo} className="bg-slate-800/60 backdrop-blur-md p-6 rounded-2xl shadow-xl">
                 <h3 className="text-xl font-semibold mb-4 border-b pb-2 border-white/10 capitalize">{tipo}s</h3>
                 <ul className="space-y-2 mb-4">
@@ -397,6 +420,7 @@ export default function AdminProfesionales() {
           </div>
         )}
 
+        {/* TAB USUARIOS */}
         {tab === "usuarios" && (
           <div>
             <h2 className="text-2xl font-bold mb-4">Usuarios Registrados</h2>
@@ -438,13 +462,28 @@ export default function AdminProfesionales() {
                         <td className="p-2">{usuario.email || "—"}</td>
                         <td className="p-2">{usuario.uid || "—"}</td>
                         <td className="p-2">{usuario.fechaRegistro || "—"}</td>
-                        <td className="p-2 text-center">
-                          <button
-                            onClick={() => eliminarUsuario(usuario.id)}
-                            className="text-red-400 hover:text-red-500 transition"
+                        <td className="p-2 text-center space-x-2">
+                          <span
+                            className={`inline-block px-2 py-1 text-xs rounded-full ${usuario.isAdmin ? "bg-green-600" : "bg-gray-500"
+                              }`}
                           >
-                            <Trash2 size={20} />
+                            {usuario.isAdmin ? "Sí" : "No"}
+                          </span>
+                          <button
+                            onClick={() => cambiarRol(usuario)}
+                            className={`text-sm font-semibold ${usuario.isAdmin ? "text-yellow-400 hover:text-yellow-300" : "text-blue-400 hover:text-blue-300"
+                              }`}
+                          >
+                            {usuario.isAdmin ? "Quitar admin" : "Hacer admin"}
                           </button>
+                          {usuario.uid !== auth.currentUser.uid && (
+                            <button
+                              onClick={() => eliminarUsuario(usuario.id)}
+                              className="ml-2 text-red-400 hover:text-red-500 transition"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))

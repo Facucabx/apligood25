@@ -5,10 +5,10 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import BottomNav from "./BottomNav";
-import { FaSun, FaMoon, FaUser, FaSignOutAlt } from "react-icons/fa";
-
+import { FaSun, FaMoon, FaUser, FaSignOutAlt, FaTools } from "react-icons/fa";
 export default function Layout() {
-  const { user, foto } = useContext(AuthContext);
+
+const { user, isAdmin, foto } = useContext(AuthContext); // 👈 agregá isAdmin acá
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,7 +34,6 @@ export default function Layout() {
     return () => document.removeEventListener("mousedown", manejarClickFuera);
   }, []);
 
-  // ⚙️ Sincronizar modo oscuro con <html>
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -43,7 +42,6 @@ export default function Layout() {
     }
   }, [darkMode]);
 
-  // Detectar si ocultar BottomNav (según la ruta actual)
   const ocultarBottomNav =
     location.pathname.startsWith("/admin/editar") ||
     location.pathname.startsWith("/admin/nuevo");
@@ -70,6 +68,17 @@ export default function Layout() {
               >
                 <FaUser /> Perfil
               </button>
+
+              {/* ✅ Solo visible para vos */}
+              {isAdmin && (
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <FaTools /> Panel Admin
+                </button>
+              )}
+
               <button
                 onClick={toggleDarkMode}
                 className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -77,6 +86,7 @@ export default function Layout() {
                 {darkMode ? <FaSun /> : <FaMoon />}{" "}
                 {darkMode ? "Modo claro" : "Modo oscuro"}
               </button>
+
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 w-full px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700"

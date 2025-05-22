@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { toast } from "react-toastify";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +23,7 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success("¡Bienvenido Facu!");
-      navigate("/");
+      navigate(from, { replace: true }); // redirige a la ruta original
     } catch (err) {
       switch (err.code) {
         case "auth/user-not-found":
@@ -72,7 +75,9 @@ export default function Login() {
 
       <div className="bg-white/90 dark:bg-black/70 backdrop-blur-md rounded-2xl shadow-lg p-6 w-full max-w-sm text-center animate-fadeIn">
         <h1 className="text-3xl font-bold text-blue-600 mb-2">Apligood</h1>
-        <h2 className="text-sm font-medium text-gray-600 mb-1">Conectando soluciones en tu ciudad...</h2>
+        <h2 className="text-sm font-medium text-gray-600 mb-1">
+          Conectando soluciones en tu ciudad...
+        </h2>
         <p className="text-sm text-gray-500 mb-4">Ingresa a tu cuenta</p>
 
         {error && (

@@ -5,11 +5,13 @@ import { doc, getDoc } from "firebase/firestore";
 
 export const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
   const [foto, setFoto] = useState("");
-  const [loading, setLoading] = useState(true); // ⬅️ Nuevo: loading
+  const [isAdmin, setIsAdmin] = useState(false); // ✅ Ahora sí: hook adentro del componente
+  const [loading, setLoading] = useState(true);
 
   const cargarDatosUsuario = async (userFirebase) => {
     if (!userFirebase) return;
@@ -21,9 +23,11 @@ export function AuthProvider({ children }) {
         const data = docSnap.data();
         setNombre(data.nombre || userFirebase.displayName || "");
         setFoto(data.fotoUrl || userFirebase.photoURL || "");
+        setIsAdmin(data.isAdmin || false);
       } else {
         setNombre(userFirebase.displayName || "");
         setFoto(userFirebase.photoURL || "");
+        setIsAdmin(false);
       }
     } catch (error) {
       console.error("Error cargando datos del usuario:", error);
@@ -32,11 +36,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (userFirebase) => {
-      setUser(userFirebase);
       if (userFirebase) {
         await cargarDatosUsuario(userFirebase);
+        setUser(userFirebase);
+        setEmail(userFirebase.email || "");
+      } else {
+        setUser(null);
+        setEmail("");
+        setIsAdmin(false);
       }
-      setLoading(false); // ⬅️ Listo: termina la carga
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -46,6 +55,7 @@ export function AuthProvider({ children }) {
     if (auth.currentUser) {
       await auth.currentUser.reload();
       setUser(auth.currentUser);
+      setEmail(auth.currentUser.email || "");
       await cargarDatosUsuario(auth.currentUser);
     }
   };
@@ -54,15 +64,19 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
+        email,
+        isAdmin,
         nombre,
         foto,
         setNombre,
         setFoto,
         refrescarUsuario,
-        loading, // ⬅️ Exportamos loading
+        loading,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export { AuthProvider };
