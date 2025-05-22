@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -15,11 +15,15 @@ export default function Topbar() {
 
   return (
     <header className="bg-blue-500 text-white px-4 py-3 shadow-md flex justify-between items-center">
-      <h1 className="text-lg font-bold">Apligood</h1>
+      <Link to="/" className="text-lg font-bold hover:opacity-80 transition">
+        Apligood
+      </Link>
       <div className="flex items-center gap-4">
         {currentUser && (
           <>
-            <span className="text-sm hidden sm:inline">{currentUser.displayName || currentUser.email}</span>
+            <span className="text-sm hidden sm:inline">
+              {currentUser.displayName || currentUser.email}
+            </span>
             <img
               src={currentUser.photoURL || "/user.png"}
               alt="Avatar"

@@ -3,12 +3,12 @@ import { AuthContext } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useNavigate, Outlet, useLocation, Link } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import { FaSun, FaMoon, FaUser, FaSignOutAlt, FaTools } from "react-icons/fa";
-export default function Layout() {
 
-const { user, isAdmin, foto } = useContext(AuthContext); // 👈 agregá isAdmin acá
+export default function Layout() {
+  const { user, isAdmin, foto } = useContext(AuthContext);
   const { darkMode, toggleDarkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,7 +49,12 @@ const { user, isAdmin, foto } = useContext(AuthContext); // 👈 agregá isAdmin
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-primary shadow-md text-white px-4 py-3 flex justify-between items-center">
-        <div className="text-lg font-bold">Apligood</div>
+        {/* ✅ Logo clickeable al home */}
+        <Link to="/" className="text-lg font-bold hover:opacity-80 transition cursor-pointer">
+          Apligood
+        </Link>
+
+        {/* ✅ Menú desplegable del usuario */}
         <div className="relative">
           <img
             src={foto || "/avatar-placeholder.webp"}
@@ -69,7 +74,6 @@ const { user, isAdmin, foto } = useContext(AuthContext); // 👈 agregá isAdmin
                 <FaUser /> Perfil
               </button>
 
-              {/* ✅ Solo visible para vos */}
               {isAdmin && (
                 <button
                   onClick={() => navigate("/admin")}

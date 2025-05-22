@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
@@ -73,7 +72,7 @@ export default function PerfilProfesional() {
 
   return (
     <div className="max-w-xl mx-auto p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-6 mb-4">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 mb-4 border border-slate-300 dark:border-slate-700">
         <div className="flex items-center gap-4">
           <img
             src={profesional.avatar || "/images/avatar-default.webp"}
@@ -105,7 +104,11 @@ export default function PerfilProfesional() {
 
       {tab === "info" && (
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 text-gray-700 dark:text-gray-300">
-          <p>{profesional.descripcion || "Este profesional aún no cargó su descripción."}</p>
+          <p>
+            {profesional.descripcion
+              ? profesional.descripcion
+              : "Este profesional aún no escribió su bio, pero podés contactarlo desde aquí."}
+          </p>
         </div>
       )}
 
@@ -122,9 +125,12 @@ export default function PerfilProfesional() {
                   {r.nombre.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-semibold">{r.nombre} <span className={resenaTipo === "positivas" ? "text-green-500" : "text-red-500"}>
-                    {resenaTipo === "positivas" ? <FaThumbsUp className="inline" /> : <FaThumbsDown className="inline" />}
-                  </span></p>
+                  <p className="font-semibold">
+                    {r.nombre}{" "}
+                    <span className={resenaTipo === "positivas" ? "text-green-500" : "text-red-500"}>
+                      {resenaTipo === "positivas" ? <FaThumbsUp className="inline" /> : <FaThumbsDown className="inline" />}
+                    </span>
+                  </p>
                   <p className="text-sm">{r.texto}</p>
                 </div>
               </li>

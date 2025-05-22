@@ -14,7 +14,7 @@ export default function Home() {
           Buen día, Facu 👋
         </h1>
         <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base text-center mt-1 mb-4">
-          ¿Qué te gustaría hacer hoy para mejorar tu comunidad?
+          Tu ciudad, más simple. ¿Qué hacemos hoy?
         </p>
 
         {/* 🎞️ Banner dinámico */}
