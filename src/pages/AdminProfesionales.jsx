@@ -12,15 +12,18 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "react-toastify";
 import BottomNav from "../components/BottomNav";
 import { ThemeContext } from "../context/ThemeContext";
-import { Pencil, Trash2, Save } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
+import { Pencil, Trash2, Save, Check, X } from "lucide-react";
 
 export default function AdminProfesionales() {
   const { darkMode } = useContext(ThemeContext);
+  const { user } = useContext(AuthContext);
   const [tab, setTab] = useState("resumen");
   const [profesionales, setProfesionales] = useState([]);
   const [especialidades, setEspecialidades] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   const [filtroEmail, setFiltroEmail] = useState("");
 
   const [nombre, setNombre] = useState("");
@@ -46,9 +49,10 @@ export default function AdminProfesionales() {
   }, [darkMode]);
 
   useEffect(() => {
-    obtenerProfesionales();
-    obtenerListas();
-    obtenerUsuarios();
+  obtenerProfesionales();
+  obtenerListas();
+  obtenerUsuarios();
+  obtenerSolicitudes(); // ✅ esta faltaba
   }, []);
 
   const obtenerProfesionales = async () => {
@@ -69,6 +73,12 @@ export default function AdminProfesionales() {
     const listaUsuarios = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setUsuarios(listaUsuarios);
   };
+
+  const obtenerSolicitudes = async () => {
+  const querySnapshot = await getDocs(collection(db, "solicitudesProfesionales"));
+  const lista = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  setSolicitudes(lista);
+};
 
   const handleAgregar = async () => {
     if (!nombre || !especialidad || !ciudad || !disponibilidad) {
@@ -193,7 +203,7 @@ export default function AdminProfesionales() {
     <div className={`min-h-screen ${clasesFondo}`}>
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex justify-center gap-4 mb-6">
-          {["resumen", "profesionales", "listas", "usuarios"].map((t) => (
+          {["resumen", "profesionales", "listas", "usuarios", "solicitudes"].map((t) => (
             <button
               key={t}
               className={`px-4 py-2 rounded-full font-semibold shadow-sm transition-all duration-200 ${tab === t
@@ -206,6 +216,44 @@ export default function AdminProfesionales() {
             </button>
           ))}
         </div>
+
+        {/* PESTAÑA SOLICITUDES */}
+        {tab === "solicitudes" && (
+          <div className="p-4">
+            <h2 className="text-xl font-bold mb-4">Solicitudes pendientes</h2>
+            {solicitudes.length === 0 ? (
+              <p>No hay solicitudes pendientes.</p>
+            ) : (
+              <ul className="space-y-4">
+                {solicitudes.map((sol) => (
+                  <li
+                    key={sol.id}
+                    className="border p-4 rounded shadow-md bg-white dark:bg-gray-800"
+                  >
+                    <p><strong>Nombre:</strong> {sol.nombre}</p>
+                    <p><strong>Especialidad:</strong> {sol.especialidad}</p>
+                    <p><strong>Ciudad:</strong> {sol.ciudad}</p>
+                    <p><strong>Disponibilidad:</strong> {sol.disponibilidad}</p>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => aceptarSolicitud(sol)}
+                        className="bg-green-600 text-white px-3 py-1 rounded flex items-center gap-1"
+                      >
+                        <Check size={16} /> Aceptar
+                      </button>
+                      <button
+                        onClick={() => rechazarSolicitud(sol.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded flex items-center gap-1"
+                      >
+                        <X size={16} /> Rechazar
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* TAB RESUMEN */}
         {tab === "resumen" && (

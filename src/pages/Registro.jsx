@@ -60,9 +60,12 @@ export default function Registro() {
       }
 
       await setDoc(doc(db, "usuarios", cred.user.uid), {
+        uid: cred.user.uid,
         nombre,
         email,
-        avatar: avatarUrl,
+        foto: avatarUrl,
+        isAdmin: false,
+        fechaRegistro: new Date().toLocaleString(),
       });
 
       setSuccess(true);

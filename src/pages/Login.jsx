@@ -23,7 +23,7 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success("¡Bienvenido Facu!");
-      navigate(from, { replace: true }); // redirige a la ruta original
+      navigate(from, { replace: true });
     } catch (err) {
       switch (err.code) {
         case "auth/user-not-found":
@@ -47,41 +47,35 @@ export default function Login() {
   return (
     <div
       className="min-h-screen w-screen flex items-center justify-center px-4 bg-center bg-no-repeat transition-all duration-500"
-      style={{
-        backgroundImage: `url('/images/fondo-login-desktop.webp')`,
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundColor: "#0f172a",
-        backgroundAttachment: "fixed",
+      style={{ backgroundColor: '#0f172a'
       }}
     >
       <style>
         {`
           @media (max-width: 768px) {
             div[style] {
-              background-image: url('/images/fondo-login-tablet.webp');
+              background-image: url('/images/fondo-login-oscuro-tablet.webp');
               background-size: cover;
             }
           }
           @media (max-width: 480px) {
             div[style] {
-              background-image: url('/images/fondo-login-mobile.webp');
+              background-image: url('/images/fondo-login-oscuro-mobile.webp');
               background-size: cover;
             }
           }
         `}
       </style>
 
-      <div className="bg-white/90 dark:bg-black/70 backdrop-blur-md rounded-2xl shadow-lg p-6 w-full max-w-sm text-center animate-fadeIn">
-        <h1 className="text-3xl font-bold text-blue-600 mb-2">Apligood</h1>
-        <h2 className="text-sm font-medium text-gray-600 mb-1">
+      <div className="bg-white/90 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center animate-fadeIn">
+        <h1 className="text-4xl font-extrabold text-blue-600 mb-2 tracking-tight">Apligood</h1>
+        <h2 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-1">
           Conectando soluciones en tu ciudad...
         </h2>
-        <p className="text-sm text-gray-500 mb-4">Ingresa a tu cuenta</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Ingresa a tu cuenta</p>
 
         {error && (
-          <p className="text-red-500 text-sm font-medium mb-2">{error}</p>
+          <p className="text-red-500 text-sm font-semibold mb-4">{error}</p>
         )}
 
         <form className="space-y-4 text-left" onSubmit={handleLogin}>
@@ -90,7 +84,7 @@ export default function Login() {
             name="email"
             placeholder="Correo electrónico"
             aria-label="Correo electrónico"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
             disabled={loading}
           />
@@ -99,14 +93,14 @@ export default function Login() {
             name="password"
             placeholder="Contraseña"
             aria-label="Contraseña"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading}
-            className={`w-full text-white py-2 rounded-lg transition ${
+            className={`w-full text-white py-3 rounded-lg transition-all duration-200 font-semibold shadow-lg ${
               loading
                 ? "bg-blue-300 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
@@ -121,12 +115,12 @@ export default function Login() {
           <img
             src="https://img.icons8.com/color/48/google-logo.png"
             alt="Google"
-            className="w-6 h-6 cursor-pointer hover:scale-110 transition"
+            className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform"
           />
           <img
             src="https://img.icons8.com/color/48/facebook-new.png"
             alt="Facebook"
-            className="w-6 h-6 cursor-pointer hover:scale-110 transition"
+            className="w-6 h-6 cursor-pointer hover:scale-110 transition-transform"
           />
         </div>
 
@@ -134,7 +128,7 @@ export default function Login() {
           <img
             src="https://img.icons8.com/ios/50/fingerprint.png"
             alt="fingerprint"
-            className="w-8 h-8 mx-auto opacity-50"
+            className="w-8 h-8 mx-auto opacity-40"
           />
         </div>
 
@@ -142,7 +136,7 @@ export default function Login() {
           <Link to="/registro" className="block hover:underline">
             Crear cuenta
           </Link>
-          <Link to="#" className="block hover:underline text-gray-500">
+          <Link to="#" className="block hover:underline text-gray-500 dark:text-gray-400">
             Recuperar contraseña
           </Link>
         </div>

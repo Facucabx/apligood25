@@ -10,7 +10,8 @@ const AuthProvider = ({ children }) => {
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
   const [foto, setFoto] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false); // ✅ Ahora sí: hook adentro del componente
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isProfessional, setIsProfessional] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const cargarDatosUsuario = async (userFirebase) => {
@@ -24,10 +25,12 @@ const AuthProvider = ({ children }) => {
         setNombre(data.nombre || userFirebase.displayName || "");
         setFoto(data.fotoUrl || userFirebase.photoURL || "");
         setIsAdmin(data.isAdmin || false);
+        setIsProfessional(data.isProfessional || false);
       } else {
         setNombre(userFirebase.displayName || "");
         setFoto(userFirebase.photoURL || "");
         setIsAdmin(false);
+        setIsProfessional(false);
       }
     } catch (error) {
       console.error("Error cargando datos del usuario:", error);
@@ -44,6 +47,7 @@ const AuthProvider = ({ children }) => {
         setUser(null);
         setEmail("");
         setIsAdmin(false);
+        setIsProfessional(false);
       }
       setLoading(false);
     });
@@ -66,6 +70,7 @@ const AuthProvider = ({ children }) => {
         user,
         email,
         isAdmin,
+        isProfessional,
         nombre,
         foto,
         setNombre,

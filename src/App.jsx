@@ -3,7 +3,6 @@ import RutaPrivada from "./components/RutaPrivada";
 import Layout from "./components/Layout";
 import { useState, useEffect } from "react";
 import SplashScreen from "./components/SplashScreen";
-
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Home from "./pages/Home";
@@ -14,6 +13,7 @@ import AdminProfesionales from "./pages/AdminProfesionales";
 import NuevoProfesional from "./pages/NuevoProfesional";
 import Reservas from "./pages/Reservas";
 import Objetos from "./pages/Objetos";
+import SolicitarProfesional from "./pages/SolicitarProfesional"; // ✅ agregala
 
 export default function App() {
   const [mostrandoSplash, setMostrandoSplash] = useState(true);
@@ -52,6 +52,7 @@ export default function App() {
         {/* 🛠️ Admin */}
         <Route path="admin" element={<AdminProfesionales />} />
         <Route path="admin/nuevo" element={<NuevoProfesional />} />
+        <Route path="solicitar-profesional" element={<SolicitarProfesional />} /> // ✅ nueva ruta
       </Route>
     </Routes>
   );
